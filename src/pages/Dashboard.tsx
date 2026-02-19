@@ -1,11 +1,68 @@
+import DashboardLayout from "@/components/DashboardLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { ClipboardList, Camera, Sparkles, Palette, FlaskConical, MessageCircle, CalendarCheck, ArrowRight } from "lucide-react";
+
+const quickActions = [
+  { title: "Questionário de Pele", description: "Responda para traçar seu perfil", icon: ClipboardList, url: "/questionnaire", color: "bg-rose-soft" },
+  { title: "Análise por IA", description: "Tire uma selfie e descubra sua pele", icon: Camera, url: "/skin-analysis", color: "bg-peach" },
+  { title: "Minha Rotina", description: "Skincare personalizada para você", icon: Sparkles, url: "/routine", color: "bg-sage" },
+  { title: "Colorimetria", description: "Descubra sua paleta ideal", icon: Palette, url: "/colorimetry", color: "bg-lavender" },
+  { title: "Analisar Produto", description: "Verifique princípios ativos", icon: FlaskConical, url: "/products", color: "bg-peach" },
+  { title: "Chat com IA", description: "Tire dúvidas sobre skincare", icon: MessageCircle, url: "/chat", color: "bg-rose-soft" },
+];
+
 const Dashboard = () => {
+  const { user } = useAuth();
+  const name = user?.user_metadata?.name || "Usuário";
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-3xl font-serif font-bold text-foreground mb-2">Dashboard</h1>
-        <p className="text-muted-foreground">Em construção...</p>
+    <DashboardLayout title="Dashboard">
+      <div className="max-w-5xl mx-auto space-y-8">
+        {/* Welcome */}
+        <div>
+          <h2 className="text-2xl md:text-3xl font-serif font-bold text-foreground">
+            Olá, {name} 👋
+          </h2>
+          <p className="text-muted-foreground mt-1">Bem-vindo à sua central de cuidados com a pele.</p>
+        </div>
+
+        {/* Quick Actions */}
+        <div>
+          <h3 className="font-serif text-lg font-semibold text-foreground mb-4">Começar</h3>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {quickActions.map((action) => (
+              <Card key={action.title} className="hover:shadow-md transition-shadow group">
+                <CardHeader className="pb-3">
+                  <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
+                    <action.icon className="w-5 h-5 text-foreground/70" />
+                  </div>
+                  <CardTitle className="text-base font-serif">{action.title}</CardTitle>
+                  <CardDescription className="text-sm">{action.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <Button variant="ghost" size="sm" className="p-0 text-primary" asChild>
+                    <Link to={action.url}>
+                      Acessar <ArrowRight className="w-3 h-3 ml-1" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Medical disclaimer */}
+        <div className="bg-muted/50 rounded-lg p-4 border border-border">
+          <p className="text-xs text-muted-foreground text-center">
+            ⚠️ Esta plataforma não substitui consulta dermatológica profissional.
+            Sempre consulte um dermatologista para diagnósticos e tratamentos.
+          </p>
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

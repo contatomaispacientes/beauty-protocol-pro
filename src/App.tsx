@@ -7,6 +7,13 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
+import Questionnaire from "./pages/Questionnaire";
+import SkinAnalysis from "./pages/SkinAnalysis";
+import Routine from "./pages/Routine";
+import Colorimetry from "./pages/Colorimetry";
+import Products from "./pages/Products";
+import Chat from "./pages/Chat";
+import Appointments from "./pages/Appointments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,7 +29,13 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/questionnaire" element={<Questionnaire />} />
+          <Route path="/skin-analysis" element={<SkinAnalysis />} />
+          <Route path="/routine" element={<Routine />} />
+          <Route path="/colorimetry" element={<Colorimetry />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/appointments" element={<Appointments />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
