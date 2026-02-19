@@ -14,6 +14,7 @@ import Colorimetry from "./pages/Colorimetry";
 import Products from "./pages/Products";
 import Chat from "./pages/Chat";
 import Appointments from "./pages/Appointments";
+import AnvisaProducts from "./pages/AnvisaProducts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/products" element={<Products />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/appointments" element={<Appointments />} />
+          <Route path="/anvisa" element={<AnvisaProducts />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
