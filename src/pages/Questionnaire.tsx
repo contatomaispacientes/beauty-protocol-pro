@@ -119,10 +119,14 @@ const Questionnaire = () => {
                 {current.type === "single" ? (
                   <RadioGroup value={(answers[current.id] as string) || ""} onValueChange={handleSingleAnswer} className="space-y-3">
                     {current.options.map((opt) => (
-                      <label key={opt} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${answers[current.id] === opt ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}>
-                        <RadioGroupItem value={opt} />
+                      <div
+                        key={opt}
+                        onClick={() => handleSingleAnswer(opt)}
+                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${answers[current.id] === opt ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}
+                      >
+                        <RadioGroupItem value={opt} id={`${current.id}-${opt}`} />
                         <span className="text-sm">{opt}</span>
-                      </label>
+                      </div>
                     ))}
                   </RadioGroup>
                 ) : (
