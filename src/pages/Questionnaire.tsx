@@ -2,8 +2,6 @@ import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
@@ -12,22 +10,21 @@ import { motion, AnimatePresence } from "framer-motion";
 interface Question {
   id: string;
   question: string;
-  type: "single" | "multiple";
   options: string[];
-  conditionalOn?: { questionId: string; answer: string };
+  conditionalOn?: { questionId: string; answers: string[] };
 }
 
 const allQuestions: Question[] = [
-  { id: "skin_type", question: "Qual é o tipo da sua pele?", type: "single", options: ["Oleosa", "Seca", "Mista", "Normal", "Sensível", "Não sei"] },
-  { id: "main_concern", question: "Qual sua principal preocupação com a pele?", type: "single", options: ["Acne e espinhas", "Manchas e melasma", "Rugas e linhas finas", "Poros dilatados", "Olheiras", "Desidratação", "Rosácea", "Nenhuma em especial"] },
-  { id: "acne_severity", question: "Qual a gravidade da sua acne?", type: "single", options: ["Leve (poucos cravos)", "Moderada (espinhas frequentes)", "Severa (inflamações profundas)"], conditionalOn: { questionId: "main_concern", answer: "Acne e espinhas" } },
-  { id: "sun_exposure", question: "Qual seu nível de exposição solar diária?", type: "single", options: ["Baixa (fico em ambientes fechados)", "Moderada (saio eventualmente)", "Alta (trabalho ao ar livre)"] },
-  { id: "sunscreen", question: "Você usa protetor solar diariamente?", type: "single", options: ["Sim, todos os dias", "Às vezes", "Raramente", "Nunca"] },
-  { id: "current_routine", question: "O que você já usa na sua rotina?", type: "multiple", options: ["Sabonete facial", "Hidratante", "Protetor solar", "Sérum/tratamento", "Esfoliante", "Ácidos", "Nada específico"] },
-  { id: "allergies", question: "Você tem alguma alergia ou sensibilidade conhecida?", type: "multiple", options: ["Fragrâncias", "Parabenos", "Álcool", "Ácidos", "Óleos essenciais", "Nenhuma alergia"] },
-  { id: "diet_habits", question: "Como você descreveria sua alimentação?", type: "single", options: ["Equilibrada", "Rica em açúcar/gordura", "Vegana/Vegetariana", "Irregular"] },
-  { id: "water_intake", question: "Quanto de água você bebe por dia?", type: "single", options: ["Menos de 1 litro", "1 a 2 litros", "Mais de 2 litros"] },
-  { id: "sleep_quality", question: "Como é a qualidade do seu sono?", type: "single", options: ["Boa (7-9h por noite)", "Regular (5-7h)", "Ruim (menos de 5h)"] },
+  { id: "skin_type", question: "Qual é o tipo da sua pele?", options: ["Oleosa", "Seca", "Mista", "Normal", "Sensível", "Não sei"] },
+  { id: "main_concern", question: "Quais são suas preocupações com a pele?", options: ["Acne e espinhas", "Manchas e melasma", "Rugas e linhas finas", "Poros dilatados", "Olheiras", "Desidratação", "Rosácea", "Nenhuma em especial"] },
+  { id: "acne_severity", question: "Qual a gravidade da sua acne?", options: ["Leve (poucos cravos)", "Moderada (espinhas frequentes)", "Severa (inflamações profundas)"], conditionalOn: { questionId: "main_concern", answers: ["Acne e espinhas"] } },
+  { id: "sun_exposure", question: "Qual seu nível de exposição solar diária?", options: ["Baixa (fico em ambientes fechados)", "Moderada (saio eventualmente)", "Alta (trabalho ao ar livre)"] },
+  { id: "sunscreen", question: "Você usa protetor solar diariamente?", options: ["Sim, todos os dias", "Às vezes", "Raramente", "Nunca"] },
+  { id: "current_routine", question: "O que você já usa na sua rotina?", options: ["Sabonete facial", "Hidratante", "Protetor solar", "Sérum/tratamento", "Esfoliante", "Ácidos", "Nada específico"] },
+  { id: "allergies", question: "Você tem alguma alergia ou sensibilidade conhecida?", options: ["Fragrâncias", "Parabenos", "Álcool", "Ácidos", "Óleos essenciais", "Nenhuma alergia"] },
+  { id: "diet_habits", question: "Como você descreveria sua alimentação?", options: ["Equilibrada", "Rica em açúcar/gordura", "Vegana/Vegetariana", "Irregular"] },
+  { id: "water_intake", question: "Quanto de água você bebe por dia?", options: ["Menos de 1 litro", "1 a 2 litros", "Mais de 2 litros"] },
+  { id: "sleep_quality", question: "Como é a qualidade do seu sono?", options: ["Boa (7-9h por noite)", "Regular (5-7h)", "Ruim (menos de 5h)"] },
 ];
 
 const Questionnaire = () => {
@@ -37,18 +34,14 @@ const Questionnaire = () => {
 
   const visibleQuestions = allQuestions.filter((q) => {
     if (!q.conditionalOn) return true;
-    const parentAnswer = answers[q.conditionalOn.questionId];
-    return parentAnswer === q.conditionalOn.answer;
+    const parentAnswers = (answers[q.conditionalOn.questionId] as string[]) || [];
+    return q.conditionalOn.answers.some((a) => parentAnswers.includes(a));
   });
 
   const current = visibleQuestions[currentStep];
   const progress = ((currentStep + 1) / visibleQuestions.length) * 100;
 
-  const handleSingleAnswer = (value: string) => {
-    setAnswers((prev) => ({ ...prev, [current.id]: value }));
-  };
-
-  const handleMultipleAnswer = (value: string, checked: boolean) => {
+  const handleToggle = (value: string, checked: boolean) => {
     setAnswers((prev) => {
       const existing = (prev[current.id] as string[]) || [];
       if (checked) return { ...prev, [current.id]: [...existing, value] };
@@ -56,7 +49,7 @@ const Questionnaire = () => {
     });
   };
 
-  const canAdvance = current && (answers[current.id] !== undefined && (Array.isArray(answers[current.id]) ? (answers[current.id] as string[]).length > 0 : true));
+  const canAdvance = current && Array.isArray(answers[current.id]) && (answers[current.id] as string[]).length > 0;
 
   const next = () => {
     if (currentStep < visibleQuestions.length - 1) setCurrentStep((s) => s + 1);
@@ -113,35 +106,20 @@ const Questionnaire = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="font-serif text-xl">{current.question}</CardTitle>
-                <CardDescription>{current.type === "multiple" ? "Selecione todas que se aplicam" : "Selecione uma opção"}</CardDescription>
+                <CardDescription>Selecione todas que se aplicam</CardDescription>
               </CardHeader>
               <CardContent>
-                {current.type === "single" ? (
-                  <RadioGroup value={(answers[current.id] as string) || ""} onValueChange={handleSingleAnswer} className="space-y-3">
-                    {current.options.map((opt) => (
-                      <div
-                        key={opt}
-                        onClick={() => handleSingleAnswer(opt)}
-                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${answers[current.id] === opt ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}
-                      >
-                        <RadioGroupItem value={opt} id={`${current.id}-${opt}`} />
+                <div className="space-y-3">
+                  {current.options.map((opt) => {
+                    const checked = ((answers[current.id] as string[]) || []).includes(opt);
+                    return (
+                      <label key={opt} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${checked ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}>
+                        <Checkbox checked={checked} onCheckedChange={(c) => handleToggle(opt, !!c)} />
                         <span className="text-sm">{opt}</span>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                ) : (
-                  <div className="space-y-3">
-                    {current.options.map((opt) => {
-                      const checked = ((answers[current.id] as string[]) || []).includes(opt);
-                      return (
-                        <label key={opt} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${checked ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}>
-                          <Checkbox checked={checked} onCheckedChange={(c) => handleMultipleAnswer(opt, !!c)} />
-                          <span className="text-sm">{opt}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                )}
+                      </label>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
           </motion.div>
