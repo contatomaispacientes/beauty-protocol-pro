@@ -14,51 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      anvisa_products: {
-        Row: {
-          cnpj: string | null
-          company_name: string | null
-          created_at: string
-          finalization_date: string | null
-          id: string
-          process_number: string | null
-          product_category: string | null
-          product_name: string
-          product_type: string | null
-          registration_expiry: string | null
-          registration_number: string | null
-          status: string | null
-        }
-        Insert: {
-          cnpj?: string | null
-          company_name?: string | null
-          created_at?: string
-          finalization_date?: string | null
-          id?: string
-          process_number?: string | null
-          product_category?: string | null
-          product_name: string
-          product_type?: string | null
-          registration_expiry?: string | null
-          registration_number?: string | null
-          status?: string | null
-        }
-        Update: {
-          cnpj?: string | null
-          company_name?: string | null
-          created_at?: string
-          finalization_date?: string | null
-          id?: string
-          process_number?: string | null
-          product_category?: string | null
-          product_name?: string
-          product_type?: string | null
-          registration_expiry?: string | null
-          registration_number?: string | null
-          status?: string | null
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           account_type: string

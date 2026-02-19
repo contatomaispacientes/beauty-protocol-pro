@@ -22,7 +22,6 @@ import {
   FlaskConical,
   MessageCircle,
   CalendarCheck,
-  ShieldCheck,
   User,
   LogOut,
 } from "lucide-react";
@@ -37,7 +36,6 @@ const mainItems = [
 
 const toolItems = [
   { title: "Análise de Produtos", url: "/products", icon: FlaskConical },
-  { title: "Produtos ANVISA", url: "/anvisa", icon: ShieldCheck },
   { title: "Chat com IA", url: "/chat", icon: MessageCircle },
   { title: "Agendamentos", url: "/appointments", icon: CalendarCheck },
 ];
