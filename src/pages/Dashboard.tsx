@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { ClipboardList, Camera, Sparkles, Palette, FlaskConical, MessageCircle, CalendarCheck, ArrowRight } from "lucide-react";
+import JoinClinicCard from "@/components/JoinClinicCard";
 
 const quickActions = [
   { title: "Questionário de Pele", description: "Responda para traçar seu perfil", icon: ClipboardList, url: "/questionnaire", color: "bg-rose-soft" },
@@ -53,6 +54,9 @@ const Dashboard = () => {
             ))}
           </div>
         </div>
+
+        {/* Join Clinic */}
+        <JoinClinicCard />
 
         {/* Medical disclaimer */}
         <div className="bg-muted/50 rounded-lg p-4 border border-border">
