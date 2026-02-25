@@ -1,5 +1,7 @@
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Link } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +26,8 @@ import {
   CalendarCheck,
   User,
   LogOut,
+  Shield,
+  Building2,
 } from "lucide-react";
 
 const mainItems = [
@@ -42,6 +46,7 @@ const toolItems = [
 
 export function AppSidebar() {
   const { user, signOut } = useAuth();
+  const { isSuperAdmin, isAdmin } = useUserRole();
   const displayName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Usuário";
 
   return (
@@ -91,6 +96,36 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {(isAdmin || isSuperAdmin) && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Gestão</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {isAdmin && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/admin" end activeClassName="bg-sidebar-accent text-primary font-medium">
+                        <Building2 className="h-4 w-4" />
+                        <span>Painel Admin</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                {isSuperAdmin && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/super-admin" end activeClassName="bg-sidebar-accent text-primary font-medium">
+                        <Shield className="h-4 w-4" />
+                        <span>Super Admin</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">
