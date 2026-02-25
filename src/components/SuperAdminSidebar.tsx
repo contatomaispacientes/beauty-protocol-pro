@@ -5,7 +5,8 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Building2, Settings, BarChart3, LogOut, User, Shield } from "lucide-react";
+import { LayoutDashboard, Users, Building2, Settings, BarChart3, LogOut, User, Shield, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const superAdminItems = [
   { title: "Visão Geral", url: "/super-admin", icon: LayoutDashboard },
@@ -34,6 +35,11 @@ export function SuperAdminSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
+        <div className="px-3 py-2">
+          <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" asChild>
+            <Link to="/dashboard"><ArrowLeft className="w-4 h-4 mr-2" />Voltar ao Dashboard</Link>
+          </Button>
+        </div>
         <SidebarGroup>
           <SidebarGroupLabel>Administração</SidebarGroupLabel>
           <SidebarGroupContent>

@@ -5,7 +5,8 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, CalendarCheck, FileText, Link2, LogOut, User } from "lucide-react";
+import { LayoutDashboard, Users, CalendarCheck, FileText, Link2, LogOut, User, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const adminItems = [
   { title: "Painel", url: "/admin", icon: LayoutDashboard },
@@ -33,6 +34,11 @@ export function AdminSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
+        <div className="px-3 py-2">
+          <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" asChild>
+            <Link to="/dashboard"><ArrowLeft className="w-4 h-4 mr-2" />Voltar ao Dashboard</Link>
+          </Button>
+        </div>
         <SidebarGroup>
           <SidebarGroupLabel>Gestão</SidebarGroupLabel>
           <SidebarGroupContent>
