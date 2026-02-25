@@ -60,6 +60,9 @@ const Login = () => {
                 {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Entrar
               </Button>
+              <Link to="/forgot-password" className="text-sm text-primary hover:underline font-sans">
+                Esqueci minha senha
+              </Link>
               <p className="text-sm text-muted-foreground font-sans">
                 Não tem conta?{" "}
                 <Link to="/signup" className="text-primary hover:underline">Criar conta</Link>
