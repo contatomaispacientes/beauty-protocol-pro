@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +19,18 @@ interface Patient {
   profile?: { display_name: string | null; email: string | null };
 }
 
+/** Resolve tenant IDs for the current user — as owner OR as linked admin via tenant_patients */
+const resolveUserTenantIds = async (userId: string): Promise<string[]> => {
+  const [{ data: owned }, { data: linked }] = await Promise.all([
+    supabase.from("tenants").select("id").eq("owner_id", userId),
+    supabase.from("tenant_patients").select("tenant_id").eq("patient_id", userId),
+  ]);
+  const ids = new Set<string>();
+  owned?.forEach((t) => ids.add(t.id));
+  linked?.forEach((t) => ids.add(t.tenant_id));
+  return Array.from(ids);
+};
+
 const AdminPatients = () => {
   const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -31,12 +42,10 @@ const AdminPatients = () => {
   const fetchPatients = async () => {
     if (!user) return;
     setLoading(true);
-    const { data: tenants } = await supabase.from("tenants").select("id").eq("owner_id", user.id);
-    if (tenants && tenants.length > 0) {
-      const tenantIds = tenants.map((t) => t.id);
+    const tenantIds = await resolveUserTenantIds(user.id);
+    if (tenantIds.length > 0) {
       const { data } = await supabase.from("tenant_patients").select("*").in("tenant_id", tenantIds);
       if (data) {
-        // Fetch profiles for each patient
         const patientIds = data.map((p) => p.patient_id);
         const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, email").in("user_id", patientIds);
         const mapped = data.map((p) => ({
@@ -53,14 +62,14 @@ const AdminPatients = () => {
 
   const generateInviteCode = async () => {
     if (!user) return;
-    const { data: tenants } = await supabase.from("tenants").select("id").eq("owner_id", user.id).limit(1);
-    if (!tenants || tenants.length === 0) {
+    const tenantIds = await resolveUserTenantIds(user.id);
+    if (tenantIds.length === 0) {
       toast({ variant: "destructive", title: "Erro", description: "Você não tem uma clínica cadastrada." });
       return;
     }
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
     const { error } = await supabase.from("tenant_invite_codes").insert({
-      tenant_id: tenants[0].id,
+      tenant_id: tenantIds[0],
       code,
       max_uses: 10,
     });
