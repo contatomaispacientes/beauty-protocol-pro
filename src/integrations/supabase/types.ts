@@ -99,6 +99,7 @@ export type Database = {
         Row: {
           account_type: string
           age: number | null
+          clinic_name: string | null
           created_at: string
           display_name: string | null
           email: string | null
@@ -113,6 +114,7 @@ export type Database = {
         Insert: {
           account_type?: string
           age?: number | null
+          clinic_name?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -127,6 +129,7 @@ export type Database = {
         Update: {
           account_type?: string
           age?: number | null
+          clinic_name?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null

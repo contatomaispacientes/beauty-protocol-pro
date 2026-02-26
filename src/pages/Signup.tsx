@@ -16,6 +16,7 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [clinicName, setClinicName] = useState("");
   const [accountType, setAccountType] = useState("consumer");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -32,12 +33,21 @@ const Signup = () => {
       toast({ variant: "destructive", title: "Telefone obrigatório", description: "Informe seu telefone." });
       return;
     }
+    if (accountType === "professional" && !clinicName.trim()) {
+      toast({ variant: "destructive", title: "Nome da clínica obrigatório", description: "Informe o nome da clínica ou consultório." });
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name, account_type: accountType, phone },
+        data: {
+          name,
+          account_type: accountType,
+          phone,
+          ...(accountType === "professional" ? { clinic_name: clinicName } : {}),
+        },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -110,9 +120,21 @@ const Signup = () => {
                   </label>
                 </RadioGroup>
                 {accountType === "professional" && (
-                  <p className="text-xs text-amber-600 bg-amber-50 rounded-lg p-2 border border-amber-200">
-                    ⚠️ Contas profissionais precisam ser aprovadas pelo administrador antes de acessar a plataforma.
-                  </p>
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="clinicName">Nome da Clínica / Consultório</Label>
+                      <Input
+                        id="clinicName"
+                        placeholder="Ex: Clínica Derma Care"
+                        value={clinicName}
+                        onChange={(e) => setClinicName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <p className="text-xs text-amber-600 bg-amber-50 rounded-lg p-2 border border-amber-200">
+                      ⚠️ Contas profissionais precisam ser aprovadas pelo administrador antes de acessar a plataforma.
+                    </p>
+                  </>
                 )}
               </div>
             </CardContent>
