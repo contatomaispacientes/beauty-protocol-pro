@@ -59,6 +59,56 @@ export type Database = {
         }
         Relationships: []
       }
+      appointments: {
+        Row: {
+          appointment_date: string
+          appointment_time: string
+          created_at: string
+          id: string
+          notes: string | null
+          patient_id: string
+          professional_name: string | null
+          specialty: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          appointment_time: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          professional_name?: string | null
+          specialty?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          appointment_time?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          professional_name?: string | null
+          specialty?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_branding: {
         Row: {
           accent_color: string
