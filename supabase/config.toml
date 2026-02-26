@@ -1,1 +1,4 @@
 project_id = "oroxkzqbbhgreismkmbc"
+
+[functions.edit-page-ai]
+verify_jwt = false

@@ -59,6 +59,42 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_branding: {
+        Row: {
+          accent_color: string
+          font_body: string
+          font_heading: string
+          id: string
+          logo_url: string | null
+          primary_color: string
+          secondary_color: string
+          site_name: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          font_body?: string
+          font_heading?: string
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          secondary_color?: string
+          site_name?: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          font_body?: string
+          font_heading?: string
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          secondary_color?: string
+          site_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_type: string
@@ -95,6 +131,39 @@ export type Database = {
           region?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      site_pages: {
+        Row: {
+          created_at: string
+          html_content: string
+          id: string
+          is_published: boolean
+          meta_description: string | null
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          html_content?: string
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          html_content?: string
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          slug?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
