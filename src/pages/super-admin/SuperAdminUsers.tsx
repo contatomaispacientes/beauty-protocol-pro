@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Building2, Plus } from "lucide-react";
+import { Loader2, Building2, Plus, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface Tenant {
@@ -21,6 +21,8 @@ interface UserWithRole {
   email: string | null;
   display_name: string | null;
   account_type: string;
+  phone: string | null;
+  is_approved: boolean;
   roles: string[];
   clinics: Tenant[];
 }
@@ -46,23 +48,21 @@ const SuperAdminUsers = () => {
     if (allTenants) setTenants(allTenants);
 
     if (profiles) {
-      const mapped = profiles.map((p) => {
+      const mapped = profiles.map((p: any) => {
         const userClinics: Tenant[] = [];
-        // Check as patient
         const patientLinks = allPatients?.filter((tp) => tp.patient_id === p.user_id) || [];
         patientLinks.forEach((link) => {
           const t = allTenants?.find((t) => t.id === link.tenant_id);
           if (t && !userClinics.find((c) => c.id === t.id)) userClinics.push(t);
         });
-        // Check as owner
-        const ownedTenants = allTenants?.filter((t) => t.id && allTenants.find((ten) => ten.id === t.id)) || [];
-        // Actually check tenants where owner_id matches - need full tenant data
         return {
           id: p.id,
           user_id: p.user_id,
           email: p.email,
           display_name: p.display_name,
           account_type: p.account_type,
+          phone: p.phone,
+          is_approved: p.is_approved,
           roles: allRoles?.filter((r) => r.user_id === p.user_id).map((r) => r.role) || [],
           clinics: userClinics,
         };
@@ -89,11 +89,24 @@ const SuperAdminUsers = () => {
     }
   };
 
+  const handleApproval = async (userId: string, approve: boolean) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_approved: approve })
+      .eq("user_id", userId);
+
+    if (error) {
+      toast({ variant: "destructive", title: "Erro", description: error.message });
+    } else {
+      toast({ title: approve ? "Conta aprovada ✅" : "Conta rejeitada", description: approve ? "O profissional já pode acessar a plataforma." : "O acesso foi bloqueado." });
+      fetchData();
+    }
+  };
+
   const handleAssignClinic = async () => {
     if (!selectedTenant || !assignDialog.userId) return;
     setAssigning(true);
 
-    // Check if already linked
     const existing = users.find((u) => u.user_id === assignDialog.userId);
     if (existing?.clinics.find((c) => c.id === selectedTenant)) {
       toast({ variant: "destructive", title: "Erro", description: "Usuário já está vinculado a esta clínica." });
@@ -123,6 +136,10 @@ const SuperAdminUsers = () => {
     return "secondary";
   };
 
+  // Separate pending professionals
+  const pendingUsers = users.filter((u) => u.account_type === "professional" && !u.is_approved);
+  const activeUsers = users.filter((u) => u.is_approved || u.account_type !== "professional");
+
   return (
     <SuperAdminLayout title="Gerenciar Usuários">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -134,71 +151,141 @@ const SuperAdminUsers = () => {
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin" /></div>
         ) : (
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>E-mail</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Roles</TableHead>
-                    <TableHead>Clínica(s)</TableHead>
-                    <TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((u) => (
-                    <TableRow key={u.id}>
-                      <TableCell className="font-medium">{u.display_name || "—"}</TableCell>
-                      <TableCell>{u.email || "—"}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{u.account_type}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1 flex-wrap">
-                          {u.roles.map((r) => (
-                            <Badge key={r} variant={roleBadgeColor(r) as any}>{r}</Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {u.clinics.length > 0 ? (
+          <>
+            {/* Pending Approvals */}
+            {pendingUsers.length > 0 && (
+              <Card className="border-amber-200 bg-amber-50/50">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Clock className="w-5 h-5 text-amber-600" />
+                    <h3 className="font-serif font-semibold text-amber-900">Aguardando Aprovação ({pendingUsers.length})</h3>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>E-mail</TableHead>
+                        <TableHead>Telefone</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pendingUsers.map((u) => (
+                        <TableRow key={u.id}>
+                          <TableCell className="font-medium">{u.display_name || "—"}</TableCell>
+                          <TableCell>{u.email || "—"}</TableCell>
+                          <TableCell>{u.phone || "—"}</TableCell>
+                          <TableCell><Badge variant="outline">Profissional</Badge></TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="default" onClick={() => handleApproval(u.user_id, true)}>
+                                <CheckCircle2 className="w-4 h-4 mr-1" /> Aprovar
+                              </Button>
+                              <Button size="sm" variant="destructive" onClick={() => handleApproval(u.user_id, false)}>
+                                <XCircle className="w-4 h-4 mr-1" /> Rejeitar
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* All Users */}
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>E-mail</TableHead>
+                      <TableHead>Telefone</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Roles</TableHead>
+                      <TableHead>Clínica(s)</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {activeUsers.map((u) => (
+                      <TableRow key={u.id}>
+                        <TableCell className="font-medium">{u.display_name || "—"}</TableCell>
+                        <TableCell>{u.email || "—"}</TableCell>
+                        <TableCell>{u.phone || "—"}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{u.account_type === "professional" ? "Profissional" : "Paciente"}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {u.is_approved ? (
+                            <Badge variant="secondary" className="gap-1 text-green-700 bg-green-100">
+                              <CheckCircle2 className="w-3 h-3" /> Ativo
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="gap-1 text-amber-700 bg-amber-100">
+                              <Clock className="w-3 h-3" /> Pendente
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <div className="flex gap-1 flex-wrap">
-                            {u.clinics.map((c) => (
-                              <Badge key={c.id} variant="outline" className="gap-1">
-                                <Building2 className="w-3 h-3" />
-                                {c.name}
-                              </Badge>
+                            {u.roles.map((r) => (
+                              <Badge key={r} variant={roleBadgeColor(r) as any}>{r}</Badge>
                             ))}
                           </div>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">Nenhuma</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2 flex-wrap">
-                          {!u.roles.includes("admin") && !u.roles.includes("super_admin") && (
-                            <Button size="sm" variant="outline" onClick={() => handleRoleChange(u.user_id, "admin")}>
-                              Tornar Admin
-                            </Button>
+                        </TableCell>
+                        <TableCell>
+                          {u.clinics.length > 0 ? (
+                            <div className="flex gap-1 flex-wrap">
+                              {u.clinics.map((c) => (
+                                <Badge key={c.id} variant="outline" className="gap-1">
+                                  <Building2 className="w-3 h-3" />
+                                  {c.name}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">Nenhuma</span>
                           )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setAssignDialog({ open: true, userId: u.user_id, userName: u.display_name || u.email || "Usuário" })}
-                          >
-                            <Plus className="w-3 h-3 mr-1" />
-                            Clínica
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2 flex-wrap">
+                            {u.account_type === "professional" && u.is_approved && (
+                              <Button size="sm" variant="outline" className="text-destructive" onClick={() => handleApproval(u.user_id, false)}>
+                                Bloquear
+                              </Button>
+                            )}
+                            {u.account_type === "professional" && !u.is_approved && (
+                              <Button size="sm" variant="default" onClick={() => handleApproval(u.user_id, true)}>
+                                Aprovar
+                              </Button>
+                            )}
+                            {!u.roles.includes("admin") && !u.roles.includes("super_admin") && (
+                              <Button size="sm" variant="outline" onClick={() => handleRoleChange(u.user_id, "admin")}>
+                                Tornar Admin
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setAssignDialog({ open: true, userId: u.user_id, userName: u.display_name || u.email || "Usuário" })}
+                            >
+                              <Plus className="w-3 h-3 mr-1" />
+                              Clínica
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </>
         )}
       </div>
 

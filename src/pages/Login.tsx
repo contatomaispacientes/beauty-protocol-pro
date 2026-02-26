@@ -21,14 +21,34 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-
+    const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
+    
     if (error) {
+      setLoading(false);
       toast({ variant: "destructive", title: "Erro ao entrar", description: error.message });
-    } else {
-      navigate("/dashboard");
+      return;
     }
+
+    // Check if user is approved
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_approved, account_type")
+      .eq("user_id", authData.user.id)
+      .maybeSingle();
+
+    if (profile && !profile.is_approved) {
+      await supabase.auth.signOut();
+      setLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Conta pendente de aprovação",
+        description: "Sua conta profissional ainda não foi aprovada pelo administrador. Aguarde a liberação.",
+      });
+      return;
+    }
+
+    setLoading(false);
+    navigate("/dashboard");
   };
 
   return (
