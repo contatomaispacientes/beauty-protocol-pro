@@ -1,7 +1,6 @@
 import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +15,17 @@ interface InviteCode {
   created_at: string;
 }
 
+const resolveUserTenantIds = async (userId: string): Promise<string[]> => {
+  const [{ data: owned }, { data: linked }] = await Promise.all([
+    supabase.from("tenants").select("id").eq("owner_id", userId),
+    supabase.from("tenant_patients").select("tenant_id").eq("patient_id", userId),
+  ]);
+  const ids = new Set<string>();
+  owned?.forEach((t) => ids.add(t.id));
+  linked?.forEach((t) => ids.add(t.tenant_id));
+  return Array.from(ids);
+};
+
 const AdminInvites = () => {
   const { user } = useAuth();
   const [codes, setCodes] = useState<InviteCode[]>([]);
@@ -24,9 +34,13 @@ const AdminInvites = () => {
   useEffect(() => {
     const load = async () => {
       if (!user) return;
-      const { data: tenants } = await supabase.from("tenants").select("id").eq("owner_id", user.id);
-      if (tenants && tenants.length > 0) {
-        const { data } = await supabase.from("tenant_invite_codes").select("*").in("tenant_id", tenants.map((t) => t.id)).order("created_at", { ascending: false });
+      const tenantIds = await resolveUserTenantIds(user.id);
+      if (tenantIds.length > 0) {
+        const { data } = await supabase
+          .from("tenant_invite_codes")
+          .select("*")
+          .in("tenant_id", tenantIds)
+          .order("created_at", { ascending: false });
         setCodes((data as InviteCode[]) || []);
       }
       setLoading(false);
