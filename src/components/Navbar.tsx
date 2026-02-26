@@ -3,9 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import BrandingLogo from "@/components/BrandingLogo";
+import { useBrandingContext } from "@/contexts/BrandingContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { branding } = useBrandingContext();
 
   const links = [
     { label: "Início", href: "/" },
@@ -18,10 +21,8 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-serif text-sm font-bold">D</span>
-          </div>
-          <span className="font-serif text-xl font-semibold text-foreground">DermAI</span>
+          <BrandingLogo size="md" />
+          <span className="font-serif text-xl font-semibold text-foreground">{branding.site_name}</span>
         </Link>
 
         {/* Desktop */}

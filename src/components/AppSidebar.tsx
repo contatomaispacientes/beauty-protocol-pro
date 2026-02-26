@@ -1,7 +1,8 @@
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Link } from "react-router-dom";
+import BrandingLogo from "@/components/BrandingLogo";
+import { useBrandingContext } from "@/contexts/BrandingContext";
 import {
   Sidebar,
   SidebarContent,
@@ -47,16 +48,15 @@ const toolItems = [
 export function AppSidebar() {
   const { user, signOut } = useAuth();
   const { isSuperAdmin, isAdmin } = useUserRole();
+  const { branding } = useBrandingContext();
   const displayName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Usuário";
 
   return (
     <Sidebar>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-serif text-xs font-bold">D</span>
-          </div>
-          <span className="font-serif text-lg font-semibold text-sidebar-foreground">DermAI</span>
+          <BrandingLogo size="md" />
+          <span className="font-serif text-lg font-semibold text-sidebar-foreground">{branding.site_name}</span>
         </div>
       </SidebarHeader>
 

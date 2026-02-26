@@ -8,19 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
-import { Loader2, Palette, FileText, Sparkles, Save, Eye, Code } from "lucide-react";
-
-interface Branding {
-  id: string;
-  site_name: string;
-  logo_url: string | null;
-  primary_color: string;
-  secondary_color: string;
-  accent_color: string;
-  font_heading: string;
-  font_body: string;
-}
+import { useBrandingContext, Branding } from "@/contexts/BrandingContext";
+import { useEffect, useState, useRef } from "react";
+import { Loader2, Palette, FileText, Sparkles, Save, Eye, Code, Upload, X } from "lucide-react";
 
 interface SitePage {
   id: string;
@@ -33,11 +23,14 @@ interface SitePage {
 
 const SuperAdminPlatform = () => {
   const { toast } = useToast();
+  const { branding: contextBranding, refetch: refetchBranding } = useBrandingContext();
 
-  // Branding state
+  // Branding local edit state
   const [branding, setBranding] = useState<Branding | null>(null);
   const [brandingLoading, setBrandingLoading] = useState(true);
   const [savingBranding, setSavingBranding] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Pages state
   const [pages, setPages] = useState<SitePage[]>([]);
@@ -73,6 +66,43 @@ const SuperAdminPlatform = () => {
     setPagesLoading(false);
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !branding) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ variant: "destructive", title: "Arquivo inválido", description: "Selecione uma imagem (PNG, JPG, SVG, etc.)" });
+      return;
+    }
+
+    setUploadingLogo(true);
+    const ext = file.name.split(".").pop();
+    const filePath = `logo-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("platform-assets")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      toast({ variant: "destructive", title: "Erro no upload", description: uploadError.message });
+      setUploadingLogo(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("platform-assets")
+      .getPublicUrl(filePath);
+
+    setBranding({ ...branding, logo_url: urlData.publicUrl });
+    setUploadingLogo(false);
+    toast({ title: "Logo carregada! Salve para confirmar." });
+  };
+
+  const removeLogo = () => {
+    if (!branding) return;
+    setBranding({ ...branding, logo_url: null });
+  };
+
   const saveBranding = async () => {
     if (!branding) return;
     setSavingBranding(true);
@@ -94,6 +124,7 @@ const SuperAdminPlatform = () => {
       toast({ variant: "destructive", title: "Erro", description: error.message });
     } else {
       toast({ title: "Branding salvo! ✨" });
+      refetchBranding();
     }
   };
 
@@ -183,64 +214,76 @@ const SuperAdminPlatform = () => {
                         onChange={(e) => setBranding({ ...branding, site_name: e.target.value })}
                       />
                     </div>
+
+                    {/* Logo Upload */}
                     <div className="space-y-2">
-                      <Label>URL do Logo</Label>
-                      <Input
-                        value={branding.logo_url || ""}
-                        onChange={(e) => setBranding({ ...branding, logo_url: e.target.value || null })}
-                        placeholder="https://..."
+                      <Label>Logo da Plataforma</Label>
+                      {branding.logo_url ? (
+                        <div className="flex items-center gap-4 p-3 rounded-lg border border-border bg-muted/30">
+                          <img src={branding.logo_url} alt="Logo" className="w-14 h-14 rounded-lg object-cover border border-border" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-foreground font-medium truncate">Logo atual</p>
+                            <p className="text-xs text-muted-foreground truncate">{branding.logo_url.split("/").pop()}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadingLogo}>
+                              {uploadingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={removeLogo}>
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploadingLogo}
+                          className="w-full flex flex-col items-center gap-2 p-6 rounded-lg border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 transition-colors cursor-pointer"
+                        >
+                          {uploadingLogo ? (
+                            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                          ) : (
+                            <Upload className="w-8 h-8 text-muted-foreground" />
+                          )}
+                          <span className="text-sm text-muted-foreground">Clique para enviar a logo</span>
+                          <span className="text-xs text-muted-foreground">PNG, JPG ou SVG</span>
+                        </button>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="hidden"
                       />
                     </div>
+
                     <div className="grid grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label>Cor Primária</Label>
-                        <div className="flex gap-2 items-center">
-                          <input
-                            type="color"
-                            value={branding.primary_color}
-                            onChange={(e) => setBranding({ ...branding, primary_color: e.target.value })}
-                            className="w-10 h-10 rounded cursor-pointer border border-border"
-                          />
-                          <Input
-                            value={branding.primary_color}
-                            onChange={(e) => setBranding({ ...branding, primary_color: e.target.value })}
-                            className="font-mono text-xs"
-                          />
+                      {([
+                        { key: "primary_color" as const, label: "Cor Primária" },
+                        { key: "secondary_color" as const, label: "Cor Secundária" },
+                        { key: "accent_color" as const, label: "Cor Accent" },
+                      ]).map(({ key, label }) => (
+                        <div key={key} className="space-y-2">
+                          <Label>{label}</Label>
+                          <div className="flex gap-2 items-center">
+                            <input
+                              type="color"
+                              value={branding[key]}
+                              onChange={(e) => setBranding({ ...branding, [key]: e.target.value })}
+                              className="w-10 h-10 rounded cursor-pointer border border-border"
+                            />
+                            <Input
+                              value={branding[key]}
+                              onChange={(e) => setBranding({ ...branding, [key]: e.target.value })}
+                              className="font-mono text-xs"
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Cor Secundária</Label>
-                        <div className="flex gap-2 items-center">
-                          <input
-                            type="color"
-                            value={branding.secondary_color}
-                            onChange={(e) => setBranding({ ...branding, secondary_color: e.target.value })}
-                            className="w-10 h-10 rounded cursor-pointer border border-border"
-                          />
-                          <Input
-                            value={branding.secondary_color}
-                            onChange={(e) => setBranding({ ...branding, secondary_color: e.target.value })}
-                            className="font-mono text-xs"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Cor Accent</Label>
-                        <div className="flex gap-2 items-center">
-                          <input
-                            type="color"
-                            value={branding.accent_color}
-                            onChange={(e) => setBranding({ ...branding, accent_color: e.target.value })}
-                            className="w-10 h-10 rounded cursor-pointer border border-border"
-                          />
-                          <Input
-                            value={branding.accent_color}
-                            onChange={(e) => setBranding({ ...branding, accent_color: e.target.value })}
-                            className="font-mono text-xs"
-                          />
-                        </div>
-                      </div>
+                      ))}
                     </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Fonte de Títulos</Label>
@@ -319,7 +362,6 @@ const SuperAdminPlatform = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                {/* Page selector */}
                 <div className="flex flex-wrap gap-2">
                   {pages.map((page) => (
                     <Button
@@ -336,7 +378,6 @@ const SuperAdminPlatform = () => {
 
                 {selectedPage && (
                   <div className="grid lg:grid-cols-2 gap-6">
-                    {/* Editor */}
                     <Card>
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
@@ -345,11 +386,7 @@ const SuperAdminPlatform = () => {
                             HTML — {selectedPage.title}
                           </CardTitle>
                           <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setPreviewMode(!previewMode)}
-                            >
+                            <Button variant="ghost" size="sm" onClick={() => setPreviewMode(!previewMode)}>
                               <Eye className="w-4 h-4 mr-1" />
                               {previewMode ? "Código" : "Preview"}
                             </Button>
@@ -377,7 +414,6 @@ const SuperAdminPlatform = () => {
                       </CardContent>
                     </Card>
 
-                    {/* AI Instruction */}
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="font-serif text-base flex items-center gap-2">
@@ -392,14 +428,10 @@ const SuperAdminPlatform = () => {
                         <Textarea
                           value={aiInstruction}
                           onChange={(e) => setAiInstruction(e.target.value)}
-                          placeholder="Ex: Adicione uma seção de depoimentos com 3 cards. Mude o título do hero para 'Cuide da sua pele com tecnologia'. Remova a seção de preços..."
+                          placeholder="Ex: Adicione uma seção de depoimentos com 3 cards..."
                           className="min-h-[200px] resize-y"
                         />
-                        <Button
-                          onClick={applyAi}
-                          disabled={aiLoading || !aiInstruction.trim()}
-                          className="w-full"
-                        >
+                        <Button onClick={applyAi} disabled={aiLoading || !aiInstruction.trim()} className="w-full">
                           {aiLoading ? (
                             <>
                               <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -412,11 +444,9 @@ const SuperAdminPlatform = () => {
                             </>
                           )}
                         </Button>
-
                         <div className="bg-muted/50 rounded-lg p-3 border border-border">
                           <p className="text-xs text-muted-foreground">
-                            💡 <strong>Dicas:</strong> Seja específico na descrição. Você pode pedir para adicionar seções,
-                            mudar textos, reorganizar elementos, trocar cores, etc. Após a IA gerar o novo HTML,
+                            💡 <strong>Dicas:</strong> Seja específico na descrição. Após a IA gerar o novo HTML,
                             revise o preview e clique em "Salvar" para confirmar.
                           </p>
                         </div>
