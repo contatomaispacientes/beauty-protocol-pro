@@ -104,6 +104,8 @@ export type Database = {
           email: string | null
           gender: string | null
           id: string
+          is_approved: boolean
+          phone: string | null
           region: string | null
           updated_at: string
           user_id: string
@@ -116,6 +118,8 @@ export type Database = {
           email?: string | null
           gender?: string | null
           id?: string
+          is_approved?: boolean
+          phone?: string | null
           region?: string | null
           updated_at?: string
           user_id: string
@@ -128,6 +132,8 @@ export type Database = {
           email?: string | null
           gender?: string | null
           id?: string
+          is_approved?: boolean
+          phone?: string | null
           region?: string | null
           updated_at?: string
           user_id?: string
