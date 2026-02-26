@@ -31,6 +31,7 @@ interface UserWithRole {
   display_name: string | null;
   account_type: string;
   phone: string | null;
+  clinic_name: string | null;
   is_approved: boolean;
   roles: string[];
   roleIds: { id: string; role: string }[];
@@ -88,6 +89,7 @@ const SuperAdminUsers = () => {
           display_name: p.display_name,
           account_type: p.account_type,
           phone: p.phone,
+          clinic_name: p.clinic_name,
           is_approved: p.is_approved,
           roles: userRoles.map((r) => r.role),
           roleIds: userRoles.map((r) => ({ id: r.id, role: r.role })),
@@ -213,15 +215,36 @@ const SuperAdminUsers = () => {
       return;
     }
 
-    // When approving a professional, automatically grant admin role
-    if (approve) {
-      const existing = users.find((u) => u.user_id === userId);
-      if (existing && existing.account_type === "professional" && !existing.roles.includes("admin")) {
+    const existing = users.find((u) => u.user_id === userId);
+
+    if (approve && existing && existing.account_type === "professional") {
+      // 1. Grant admin role
+      if (!existing.roles.includes("admin")) {
         await supabase.from("user_roles").insert({ user_id: userId, role: "admin" as any });
       }
+
+      // 2. Auto-create clinic if clinic_name exists and user has no clinics yet
+      if (existing.clinic_name && existing.clinics.length === 0) {
+        const { data: newTenant, error: tenantError } = await supabase
+          .from("tenants")
+          .insert({ name: existing.clinic_name, owner_id: userId })
+          .select("id")
+          .single();
+
+        if (!tenantError && newTenant) {
+          // 3. Link user to the new clinic
+          await supabase.from("tenant_patients").insert({
+            patient_id: userId,
+            tenant_id: newTenant.id,
+          });
+        }
+      }
+
+      toast({ title: "Conta aprovada ✅", description: "Role admin atribuída e clínica criada automaticamente." });
+    } else {
+      toast({ title: approve ? "Conta aprovada ✅" : "Acesso bloqueado" });
     }
 
-    toast({ title: approve ? "Conta aprovada ✅ (role admin atribuída)" : "Acesso bloqueado" });
     fetchData();
   };
 
@@ -279,6 +302,7 @@ const SuperAdminUsers = () => {
                         <TableHead>Nome</TableHead>
                         <TableHead>E-mail</TableHead>
                         <TableHead>Telefone</TableHead>
+                        <TableHead>Clínica</TableHead>
                         <TableHead>Ações</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -288,6 +312,13 @@ const SuperAdminUsers = () => {
                           <TableCell className="font-medium">{u.display_name || "—"}</TableCell>
                           <TableCell>{u.email || "—"}</TableCell>
                           <TableCell>{u.phone || "—"}</TableCell>
+                          <TableCell>
+                            {u.clinic_name ? (
+                              <Badge variant="outline" className="gap-1">
+                                <Building2 className="w-3 h-3" /> {u.clinic_name}
+                              </Badge>
+                            ) : "—"}
+                          </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
                               <Button size="sm" onClick={() => handleApproval(u.user_id, true)}>
