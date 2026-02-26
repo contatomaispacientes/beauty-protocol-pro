@@ -210,10 +210,19 @@ const SuperAdminUsers = () => {
     const { error } = await supabase.from("profiles").update({ is_approved: approve }).eq("user_id", userId);
     if (error) {
       toast({ variant: "destructive", title: "Erro", description: error.message });
-    } else {
-      toast({ title: approve ? "Conta aprovada ✅" : "Acesso bloqueado" });
-      fetchData();
+      return;
     }
+
+    // When approving a professional, automatically grant admin role
+    if (approve) {
+      const existing = users.find((u) => u.user_id === userId);
+      if (existing && existing.account_type === "professional" && !existing.roles.includes("admin")) {
+        await supabase.from("user_roles").insert({ user_id: userId, role: "admin" as any });
+      }
+    }
+
+    toast({ title: approve ? "Conta aprovada ✅ (role admin atribuída)" : "Acesso bloqueado" });
+    fetchData();
   };
 
   // === QUICK ASSIGN CLINIC ===
