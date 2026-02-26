@@ -301,6 +301,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_patient_linked_to_tenant: {
+        Args: { _tenant_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "super_admin"
