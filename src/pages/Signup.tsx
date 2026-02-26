@@ -8,6 +8,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import BrandingLogo from "@/components/BrandingLogo";
+import { useBrandingContext } from "@/contexts/BrandingContext";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -17,6 +19,7 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { branding } = useBrandingContext();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +57,8 @@ const Signup = () => {
         <Card>
           <form onSubmit={handleSignup}>
             <CardHeader className="text-center">
-              <div className="mx-auto w-10 h-10 rounded-full bg-primary flex items-center justify-center mb-2">
-                <span className="text-primary-foreground font-serif text-sm font-bold">D</span>
+              <div className="mx-auto mb-2">
+                <BrandingLogo size="lg" />
               </div>
               <CardTitle className="font-serif text-2xl">Criar sua conta</CardTitle>
               <CardDescription className="font-sans">Comece sua jornada de cuidado com a pele</CardDescription>

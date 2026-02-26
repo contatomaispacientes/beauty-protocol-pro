@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import BrandingLogo from "@/components/BrandingLogo";
+import { useBrandingContext } from "@/contexts/BrandingContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -14,6 +16,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { branding } = useBrandingContext();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,11 +42,11 @@ const Login = () => {
         <Card>
           <form onSubmit={handleLogin}>
             <CardHeader className="text-center">
-              <div className="mx-auto w-10 h-10 rounded-full bg-primary flex items-center justify-center mb-2">
-                <span className="text-primary-foreground font-serif text-sm font-bold">D</span>
+              <div className="mx-auto mb-2">
+                <BrandingLogo size="lg" />
               </div>
               <CardTitle className="font-serif text-2xl">Bem-vindo de volta</CardTitle>
-              <CardDescription className="font-sans">Entre na sua conta DermAI</CardDescription>
+              <CardDescription className="font-sans">Entre na sua conta {branding.site_name}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">

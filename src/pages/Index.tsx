@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Sparkles, Camera, Palette, FlaskConical, MessageCircle, CalendarCheck, ArrowRight, Shield, Star, Leaf } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import BrandingLogo from "@/components/BrandingLogo";
+import { useBrandingContext } from "@/contexts/BrandingContext";
 
 const features = [
   {
@@ -51,6 +53,7 @@ const steps = [
 ];
 
 const Index = () => {
+  const { branding } = useBrandingContext();
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -209,13 +212,11 @@ const Index = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-serif text-xs font-bold">D</span>
-              </div>
-              <span className="font-serif text-lg font-semibold text-foreground">DermAI</span>
+              <BrandingLogo size="sm" />
+              <span className="font-serif text-lg font-semibold text-foreground">{branding.site_name}</span>
             </div>
             <p className="text-sm text-muted-foreground font-sans">
-              © 2026 DermAI. Todos os direitos reservados.
+              © 2026 {branding.site_name}. Todos os direitos reservados.
             </p>
             <div className="flex gap-6">
               <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacidade</a>
