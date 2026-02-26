@@ -33,6 +33,7 @@ import SuperAdminTenants from "./pages/super-admin/SuperAdminTenants";
 import SuperAdminFeatures from "./pages/super-admin/SuperAdminFeatures";
 import SuperAdminStats from "./pages/super-admin/SuperAdminStats";
 import SuperAdminPlatform from "./pages/super-admin/SuperAdminPlatform";
+import SitePage from "./pages/SitePage";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,9 @@ const App = () => (
           <Route path="/super-admin/features" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminFeatures /></ProtectedRoute>} />
           <Route path="/super-admin/stats" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminStats /></ProtectedRoute>} />
           <Route path="/super-admin/platform" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminPlatform /></ProtectedRoute>} />
+
+          {/* Dynamic site pages */}
+          <Route path="/page/:slug" element={<SitePage />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
