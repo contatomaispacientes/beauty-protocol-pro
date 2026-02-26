@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Plus, Copy } from "lucide-react";
@@ -19,20 +20,24 @@ interface Patient {
   profile?: { display_name: string | null; email: string | null };
 }
 
-/** Resolve tenant IDs for the current user — as owner OR as linked admin via tenant_patients */
-const resolveUserTenantIds = async (userId: string): Promise<string[]> => {
-  const [{ data: owned }, { data: linked }] = await Promise.all([
+/** Resolve tenant IDs for the current user — as owner OR linked member; super admins can access all */
+const resolveUserTenantIds = async (userId: string, isSuperAdmin: boolean): Promise<string[]> => {
+  const [{ data: owned }, { data: linked }, { data: allTenants }] = await Promise.all([
     supabase.from("tenants").select("id").eq("owner_id", userId),
     supabase.from("tenant_patients").select("tenant_id").eq("patient_id", userId),
+    isSuperAdmin ? supabase.from("tenants").select("id") : Promise.resolve({ data: [] as { id: string }[] }),
   ]);
+
   const ids = new Set<string>();
   owned?.forEach((t) => ids.add(t.id));
   linked?.forEach((t) => ids.add(t.tenant_id));
+  allTenants?.forEach((t) => ids.add(t.id));
   return Array.from(ids);
 };
 
 const AdminPatients = () => {
   const { user } = useAuth();
+  const { isSuperAdmin } = useUserRole();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteCode, setInviteCode] = useState("");
@@ -42,7 +47,7 @@ const AdminPatients = () => {
   const fetchPatients = async () => {
     if (!user) return;
     setLoading(true);
-    const tenantIds = await resolveUserTenantIds(user.id);
+    const tenantIds = await resolveUserTenantIds(user.id, isSuperAdmin);
     if (tenantIds.length > 0) {
       const { data } = await supabase.from("tenant_patients").select("*").in("tenant_id", tenantIds);
       if (data) {
@@ -58,11 +63,11 @@ const AdminPatients = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchPatients(); }, [user]);
+  useEffect(() => { fetchPatients(); }, [user, isSuperAdmin]);
 
   const generateInviteCode = async () => {
     if (!user) return;
-    const tenantIds = await resolveUserTenantIds(user.id);
+    const tenantIds = await resolveUserTenantIds(user.id, isSuperAdmin);
     if (tenantIds.length === 0) {
       toast({ variant: "destructive", title: "Erro", description: "Você não tem uma clínica cadastrada." });
       return;
