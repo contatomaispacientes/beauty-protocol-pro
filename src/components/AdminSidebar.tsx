@@ -7,6 +7,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, CalendarCheck, FileText, Link2, LogOut, User, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import BrandingLogo from "@/components/BrandingLogo";
+import { useBrandingContext } from "@/contexts/BrandingContext";
 
 const adminItems = [
   { title: "Painel", url: "/admin", icon: LayoutDashboard },
@@ -18,17 +20,16 @@ const adminItems = [
 
 export function AdminSidebar() {
   const { user, signOut } = useAuth();
+  const { branding } = useBrandingContext();
   const displayName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Admin";
 
   return (
     <Sidebar>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-serif text-xs font-bold">D</span>
-          </div>
+          <BrandingLogo size="md" />
           <div>
-            <span className="font-serif text-lg font-semibold text-sidebar-foreground">DermAI</span>
+            <span className="font-serif text-lg font-semibold text-sidebar-foreground">{branding.site_name}</span>
             <span className="text-xs text-muted-foreground ml-2">Admin</span>
           </div>
         </div>
