@@ -15,6 +15,7 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [accountType, setAccountType] = useState("consumer");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -27,12 +28,16 @@ const Signup = () => {
       toast({ variant: "destructive", title: "Senha muito curta", description: "A senha deve ter no mínimo 6 caracteres." });
       return;
     }
+    if (!phone.trim()) {
+      toast({ variant: "destructive", title: "Telefone obrigatório", description: "Informe seu telefone." });
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name, account_type: accountType },
+        data: { name, account_type: accountType, phone },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -40,6 +45,12 @@ const Signup = () => {
 
     if (error) {
       toast({ variant: "destructive", title: "Erro ao criar conta", description: error.message });
+    } else if (accountType === "professional") {
+      toast({
+        title: "Cadastro recebido!",
+        description: "Sua conta profissional será ativada após aprovação do administrador. Você receberá um e-mail de confirmação.",
+      });
+      navigate("/login");
     } else {
       toast({ title: "Conta criada!", description: "Verifique seu e-mail para confirmar o cadastro." });
       navigate("/login");
@@ -73,6 +84,10 @@ const Signup = () => {
                 <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="phone">Telefone</Label>
+                <Input id="phone" type="tel" placeholder="(11) 99999-9999" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
                 <Input id="password" type="password" placeholder="Mínimo 6 caracteres" value={password} onChange={(e) => setPassword(e.target.value)} required />
               </div>
@@ -82,24 +97,29 @@ const Signup = () => {
                   <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${accountType === "consumer" ? "border-primary bg-primary/5" : "border-border"}`}>
                     <RadioGroupItem value="consumer" />
                     <div>
-                      <p className="text-sm font-medium">Consumidor</p>
+                      <p className="text-sm font-medium">Paciente</p>
                       <p className="text-xs text-muted-foreground">Uso pessoal</p>
                     </div>
                   </label>
                   <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${accountType === "professional" ? "border-primary bg-primary/5" : "border-border"}`}>
                     <RadioGroupItem value="professional" />
                     <div>
-                      <p className="text-sm font-medium">Profissional</p>
-                      <p className="text-xs text-muted-foreground">Estética/Derma</p>
+                      <p className="text-sm font-medium">Clínica / Médico</p>
+                      <p className="text-xs text-muted-foreground">Requer aprovação</p>
                     </div>
                   </label>
                 </RadioGroup>
+                {accountType === "professional" && (
+                  <p className="text-xs text-amber-600 bg-amber-50 rounded-lg p-2 border border-amber-200">
+                    ⚠️ Contas profissionais precisam ser aprovadas pelo administrador antes de acessar a plataforma.
+                  </p>
+                )}
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button className="w-full" type="submit" disabled={loading}>
                 {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Criar conta
+                {accountType === "professional" ? "Solicitar cadastro" : "Criar conta"}
               </Button>
               <p className="text-sm text-muted-foreground font-sans">
                 Já tem conta?{" "}
