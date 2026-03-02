@@ -3,15 +3,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { ClipboardList, Camera, Sparkles, Palette, FlaskConical, MessageCircle, CalendarCheck, ArrowRight } from "lucide-react";
+import { ClipboardList, Camera, Sparkles, Palette, FlaskConical, MessageCircle, CalendarCheck, ArrowRight, History } from "lucide-react";
 import JoinClinicCard from "@/components/JoinClinicCard";
 
 const quickActions = [
   { title: "Questionário de Pele", description: "Responda para traçar seu perfil", icon: ClipboardList, url: "/questionnaire", color: "bg-rose-soft" },
   { title: "Análise por IA", description: "Tire uma selfie e descubra sua pele", icon: Camera, url: "/skin-analysis", color: "bg-peach" },
   { title: "Minha Rotina", description: "Skincare personalizada para você", icon: Sparkles, url: "/routine", color: "bg-sage" },
-  { title: "Colorimetria", description: "Descubra sua paleta ideal", icon: Palette, url: "/colorimetry", color: "bg-lavender" },
-  { title: "Analisar Produto", description: "Verifique princípios ativos", icon: FlaskConical, url: "/products", color: "bg-peach" },
+  { title: "Colorimetria e Maquiagem", description: "Descubra sua paleta ideal", icon: Palette, url: "/colorimetry", color: "bg-lavender" },
+  { title: "Analisar Produto", description: "Verifique princípios ativos com IA", icon: FlaskConical, url: "/products", color: "bg-peach" },
+  { title: "Prontuário Digital", description: "Linha do tempo de evolução", icon: History, url: "/timeline", color: "bg-sage" },
   { title: "Chat com IA", description: "Tire dúvidas sobre skincare", icon: MessageCircle, url: "/chat", color: "bg-rose-soft" },
 ];
 

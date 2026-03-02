@@ -109,6 +109,59 @@ export type Database = {
           },
         ]
       }
+      patient_timeline: {
+        Row: {
+          ai_observations: string | null
+          condition_tag: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          entry_type: string
+          id: string
+          image_url: string | null
+          patient_id: string
+          tenant_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          ai_observations?: string | null
+          condition_tag?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          entry_type?: string
+          id?: string
+          image_url?: string | null
+          patient_id: string
+          tenant_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          ai_observations?: string | null
+          condition_tag?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          entry_type?: string
+          id?: string
+          image_url?: string | null
+          patient_id?: string
+          tenant_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_timeline_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_branding: {
         Row: {
           accent_color: string
