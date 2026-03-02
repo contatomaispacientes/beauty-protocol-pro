@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Camera, Upload, Plus, Loader2, Brain, ImageIcon, FileText, Calendar } from "lucide-react";
+import { Camera, Upload, Plus, Loader2, Brain, ImageIcon, FileText, Calendar, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -154,16 +154,20 @@ const Timeline = () => {
   return (
     <DashboardLayout title="Prontuário Digital">
       <div className="max-w-3xl mx-auto space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center gap-3">
           <div>
             <p className="text-muted-foreground">Linha do tempo de evolução e acompanhamento.</p>
             <p className="text-xs text-muted-foreground mt-1">⚠️ As observações da IA não substituem consulta médica.</p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm(); }}>
-            <DialogTrigger asChild>
-              <Button><Plus className="w-4 h-4 mr-2" />Novo Registro</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <Printer className="w-4 h-4 mr-2" />Exportar
+            </Button>
+            <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm(); }}>
+              <DialogTrigger asChild>
+                <Button><Plus className="w-4 h-4 mr-2" />Novo Registro</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Novo Registro</DialogTitle>
               </DialogHeader>
@@ -220,6 +224,7 @@ const Timeline = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {loading ? (

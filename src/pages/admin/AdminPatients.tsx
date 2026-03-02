@@ -9,8 +9,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Copy } from "lucide-react";
+import { Loader2, Plus, Copy, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 interface Patient {
   id: string;
@@ -132,17 +133,25 @@ const AdminPatients = () => {
                     <TableHead>E-mail</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Vinculado em</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {patients.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Nenhum paciente vinculado ainda.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Nenhum paciente vinculado ainda.</TableCell></TableRow>
                   ) : patients.map((p) => (
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.profile?.display_name || "—"}</TableCell>
                       <TableCell>{p.profile?.email || "—"}</TableCell>
                       <TableCell><Badge variant={p.status === "active" ? "default" : "secondary"}>{p.status}</Badge></TableCell>
                       <TableCell>{new Date(p.created_at).toLocaleDateString("pt-BR")}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/admin/patients/${p.patient_id}/timeline`}>
+                            <History className="w-4 h-4 mr-1" />Prontuário
+                          </Link>
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
