@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.makeup-recommendations]
 verify_jwt = false
+
+[functions.timeline-ai]
+verify_jwt = false
