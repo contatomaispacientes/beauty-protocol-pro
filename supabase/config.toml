@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.delete-user]
 verify_jwt = false
+
+[functions.analyze-product]
+verify_jwt = false
+
+[functions.makeup-recommendations]
+verify_jwt = false
