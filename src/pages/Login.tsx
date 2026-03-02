@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import BrandingLogo from "@/components/BrandingLogo";
@@ -29,7 +30,6 @@ const Login = () => {
       return;
     }
 
-    // Check if user is approved
     const { data: profile } = await supabase
       .from("profiles")
       .select("is_approved, account_type")
@@ -52,19 +52,35 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-[5%] w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute bottom-20 right-[5%] w-80 h-80 rounded-full bg-lavender/30 blur-3xl" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md relative z-10"
+      >
+        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" />
           Voltar ao início
         </Link>
 
-        <Card>
+        <Card className="shadow-lg border-border/50">
           <form onSubmit={handleLogin}>
             <CardHeader className="text-center">
-              <div className="mx-auto mb-2">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+                className="mx-auto mb-2"
+              >
                 <BrandingLogo size="lg" />
-              </div>
+              </motion.div>
               <CardTitle className="font-serif text-2xl">Bem-vindo de volta</CardTitle>
               <CardDescription className="font-sans">Entre na sua conta {branding.site_name}</CardDescription>
             </CardHeader>
@@ -93,7 +109,7 @@ const Login = () => {
             </CardFooter>
           </form>
         </Card>
-      </div>
+      </motion.div>
     </div>
   );
 };
