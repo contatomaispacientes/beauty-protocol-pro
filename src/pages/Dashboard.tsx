@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { ClipboardList, Camera, Sparkles, Palette, FlaskConical, MessageCircle, CalendarCheck, ArrowRight, History } from "lucide-react";
+import { motion } from "framer-motion";
+import { ClipboardList, Camera, Sparkles, Palette, FlaskConical, MessageCircle, ArrowRight, History } from "lucide-react";
 import JoinClinicCard from "@/components/JoinClinicCard";
 
 const quickActions = [
@@ -16,6 +17,16 @@ const quickActions = [
   { title: "Chat com IA", description: "Tire dúvidas sobre skincare", icon: MessageCircle, url: "/chat", color: "bg-rose-soft" },
 ];
 
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.06 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 16, scale: 0.97 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" as const } },
+};
+
 const Dashboard = () => {
   const { user } = useAuth();
   const name = user?.user_metadata?.name || "Usuário";
@@ -24,48 +35,77 @@ const Dashboard = () => {
     <DashboardLayout title="Dashboard">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Welcome */}
-        <div>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <h2 className="text-2xl md:text-3xl font-serif font-bold text-foreground">
             Olá, {name} 👋
           </h2>
           <p className="text-muted-foreground mt-1">Bem-vindo à sua central de cuidados com a pele.</p>
-        </div>
+        </motion.div>
 
         {/* Quick Actions */}
         <div>
-          <h3 className="font-serif text-lg font-semibold text-foreground mb-4">Começar</h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <motion.h3
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="font-serif text-lg font-semibold text-foreground mb-4"
+          >
+            Começar
+          </motion.h3>
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
             {quickActions.map((action) => (
-              <Card key={action.title} className="hover:shadow-md transition-shadow group">
-                <CardHeader className="pb-3">
-                  <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
-                    <action.icon className="w-5 h-5 text-foreground/70" />
-                  </div>
-                  <CardTitle className="text-base font-serif">{action.title}</CardTitle>
-                  <CardDescription className="text-sm">{action.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <Button variant="ghost" size="sm" className="p-0 text-primary" asChild>
-                    <Link to={action.url}>
-                      Acessar <ArrowRight className="w-3 h-3 ml-1" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+              <motion.div key={action.title} variants={itemVariants}>
+                <Card className="hover:shadow-md hover:border-primary/20 transition-all group h-full">
+                  <CardHeader className="pb-3">
+                    <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
+                      <action.icon className="w-5 h-5 text-foreground/70" />
+                    </div>
+                    <CardTitle className="text-base font-serif">{action.title}</CardTitle>
+                    <CardDescription className="text-sm">{action.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <Button variant="ghost" size="sm" className="p-0 text-primary group-hover:translate-x-1 transition-transform" asChild>
+                      <Link to={action.url}>
+                        Acessar <ArrowRight className="w-3 h-3 ml-1" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         {/* Join Clinic */}
-        <JoinClinicCard />
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <JoinClinicCard />
+        </motion.div>
 
         {/* Medical disclaimer */}
-        <div className="bg-muted/50 rounded-lg p-4 border border-border">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="bg-muted/50 rounded-lg p-4 border border-border"
+        >
           <p className="text-xs text-muted-foreground text-center">
             ⚠️ Esta plataforma não substitui consulta dermatológica profissional.
             Sempre consulte um dermatologista para diagnósticos e tratamentos.
           </p>
-        </div>
+        </motion.div>
       </div>
     </DashboardLayout>
   );

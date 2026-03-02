@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import BrandingLogo from "@/components/BrandingLogo";
@@ -68,19 +69,35 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
-      <div className="w-full max-w-md">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-10 right-[10%] w-72 h-72 rounded-full bg-sage/40 blur-3xl" />
+        <div className="absolute bottom-10 left-[10%] w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md relative z-10"
+      >
+        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" />
           Voltar ao início
         </Link>
 
-        <Card>
+        <Card className="shadow-lg border-border/50">
           <form onSubmit={handleSignup}>
             <CardHeader className="text-center">
-              <div className="mx-auto mb-2">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+                className="mx-auto mb-2"
+              >
                 <BrandingLogo size="lg" />
-              </div>
+              </motion.div>
               <CardTitle className="font-serif text-2xl">Criar sua conta</CardTitle>
               <CardDescription className="font-sans">Comece sua jornada de cuidado com a pele</CardDescription>
             </CardHeader>
@@ -104,14 +121,14 @@ const Signup = () => {
               <div className="space-y-3">
                 <Label>Tipo de conta</Label>
                 <RadioGroup value={accountType} onValueChange={setAccountType} className="grid grid-cols-2 gap-3">
-                  <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${accountType === "consumer" ? "border-primary bg-primary/5" : "border-border"}`}>
+                  <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${accountType === "consumer" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/30"}`}>
                     <RadioGroupItem value="consumer" />
                     <div>
                       <p className="text-sm font-medium">Paciente</p>
                       <p className="text-xs text-muted-foreground">Uso pessoal</p>
                     </div>
                   </label>
-                  <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${accountType === "professional" ? "border-primary bg-primary/5" : "border-border"}`}>
+                  <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${accountType === "professional" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/30"}`}>
                     <RadioGroupItem value="professional" />
                     <div>
                       <p className="text-sm font-medium">Clínica / Médico</p>
@@ -119,23 +136,31 @@ const Signup = () => {
                     </div>
                   </label>
                 </RadioGroup>
-                {accountType === "professional" && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="clinicName">Nome da Clínica / Consultório</Label>
-                      <Input
-                        id="clinicName"
-                        placeholder="Ex: Clínica Derma Care"
-                        value={clinicName}
-                        onChange={(e) => setClinicName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <p className="text-xs text-amber-600 bg-amber-50 rounded-lg p-2 border border-amber-200">
-                      ⚠️ Contas profissionais precisam ser aprovadas pelo administrador antes de acessar a plataforma.
-                    </p>
-                  </>
-                )}
+                <AnimatePresence>
+                  {accountType === "professional" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="space-y-3 overflow-hidden"
+                    >
+                      <div className="space-y-2">
+                        <Label htmlFor="clinicName">Nome da Clínica / Consultório</Label>
+                        <Input
+                          id="clinicName"
+                          placeholder="Ex: Clínica Derma Care"
+                          value={clinicName}
+                          onChange={(e) => setClinicName(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <p className="text-xs text-amber-600 bg-amber-50 rounded-lg p-2 border border-amber-200">
+                        ⚠️ Contas profissionais precisam ser aprovadas pelo administrador antes de acessar a plataforma.
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
@@ -150,7 +175,7 @@ const Signup = () => {
             </CardFooter>
           </form>
         </Card>
-      </div>
+      </motion.div>
     </div>
   );
 };
