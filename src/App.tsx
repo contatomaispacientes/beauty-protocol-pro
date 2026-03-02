@@ -27,6 +27,7 @@ import AdminPatients from "./pages/admin/AdminPatients";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminAppointments from "./pages/admin/AdminAppointments";
 import AdminInvites from "./pages/admin/AdminInvites";
+import AdminPatientTimeline from "./pages/admin/AdminPatientTimeline";
 
 // Super Admin pages
 import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
@@ -71,6 +72,7 @@ const App = () => (
           <Route path="/admin/appointments" element={<ProtectedRoute requiredRole="admin"><AdminAppointments /></ProtectedRoute>} />
           <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><AdminReports /></ProtectedRoute>} />
           <Route path="/admin/invites" element={<ProtectedRoute requiredRole="admin"><AdminInvites /></ProtectedRoute>} />
+          <Route path="/admin/patients/:patientId/timeline" element={<ProtectedRoute requiredRole="admin"><AdminPatientTimeline /></ProtectedRoute>} />
 
           {/* Super Admin routes */}
           <Route path="/super-admin" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminDashboard /></ProtectedRoute>} />
