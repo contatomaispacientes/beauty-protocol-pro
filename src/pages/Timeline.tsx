@@ -42,12 +42,16 @@ const Timeline = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [entries, setEntries] = useState<TimelineEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [streamRef, setStreamRef] = useState<MediaStream | null>(null);
 
   // Form
   const [title, setTitle] = useState("");
@@ -81,6 +85,46 @@ const Timeline = () => {
     reader.readAsDataURL(file);
   };
 
+  const stopCamera = () => {
+    if (streamRef) {
+      streamRef.getTracks().forEach(t => t.stop());
+      setStreamRef(null);
+    }
+    setCameraActive(false);
+  };
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      setStreamRef(stream);
+      setCameraActive(true);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      }, 100);
+    } catch {
+      toast({ title: "Não foi possível acessar a câmera.", variant: "destructive" });
+    }
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d")?.drawImage(video, 0, 0);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+    setImagePreview(dataUrl);
+    // Convert to File
+    fetch(dataUrl).then(r => r.blob()).then(blob => {
+      setImageFile(new File([blob], `camera_${Date.now()}.jpg`, { type: "image/jpeg" }));
+    });
+    stopCamera();
+  };
+
   const resetForm = () => {
     setTitle("");
     setDescription("");
@@ -88,6 +132,7 @@ const Timeline = () => {
     setEntryType("photo");
     setImageFile(null);
     setImagePreview(null);
+    stopCamera();
   };
 
   const handleCreate = async () => {
@@ -205,12 +250,22 @@ const Timeline = () => {
                 <div className="space-y-2">
                   <Label>Foto</Label>
                   <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                  <canvas ref={canvasRef} className="hidden" />
                   <div className="flex gap-2">
                     <Button type="button" variant="outline" className="flex-1" onClick={() => fileRef.current?.click()}>
-                      <Upload className="w-4 h-4 mr-2" />Selecionar foto
+                      <Upload className="w-4 h-4 mr-2" />Galeria
+                    </Button>
+                    <Button type="button" variant="outline" className="flex-1" onClick={cameraActive ? capturePhoto : startCamera}>
+                      <Camera className="w-4 h-4 mr-2" />{cameraActive ? "Capturar" : "Câmera"}
                     </Button>
                   </div>
-                  {imagePreview && (
+                  {cameraActive && (
+                    <div className="relative mt-2">
+                      <video ref={videoRef} autoPlay playsInline muted className="w-full rounded-lg border border-border" />
+                      <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-2" onClick={stopCamera}>✕</Button>
+                    </div>
+                  )}
+                  {!cameraActive && imagePreview && (
                     <img src={imagePreview} alt="Preview" className="w-full max-h-48 object-cover rounded-lg mt-2 border border-border" />
                   )}
                 </div>
