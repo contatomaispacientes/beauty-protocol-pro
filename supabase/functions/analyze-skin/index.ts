@@ -32,6 +32,8 @@ IMPORTANTE:
 - Forneça recomendações personalizadas
 - Avalie o nível de hidratação aparente
 - SEMPRE inclua um score geral de saúde da pele de 0 a 100
+- SEMPRE sugira produtos cosméticos reais (nome do produto + marca) para cada condição identificada, considerando produtos disponíveis no Brasil (nacionais e importados)
+- Inclua de 3 a 6 produtos recomendados, com categoria de uso (limpeza, hidratação, tratamento, proteção solar, etc.)
 - Responda SEMPRE em português brasileiro
 - NUNCA faça diagnósticos definitivos — use termos como "aparente", "sugestivo de", "possível"`;
 
@@ -93,9 +95,24 @@ IMPORTANTE:
                       additionalProperties: false,
                     },
                   },
+                  suggested_products: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        product_name: { type: "string", description: "Nome completo do produto" },
+                        brand: { type: "string", description: "Marca do produto" },
+                        category: { type: "string", description: "Categoria: Limpeza, Hidratante, Sérum, Protetor Solar, Tratamento, Esfoliante, Tônico, Máscara" },
+                        reason: { type: "string", description: "Por que este produto é indicado para esta pele" },
+                        price_range: { type: "string", description: "Faixa de preço estimada em R$" },
+                      },
+                      required: ["product_name", "brand", "category", "reason", "price_range"],
+                      additionalProperties: false,
+                    },
+                  },
                   summary: { type: "string", description: "Resumo geral da análise em 2-3 frases" },
                 },
-                required: ["skin_type", "tone", "subtone", "hydration_level", "health_score", "conditions", "recommendations", "summary"],
+                required: ["skin_type", "tone", "subtone", "hydration_level", "health_score", "conditions", "recommendations", "suggested_products", "summary"],
                 additionalProperties: false,
               },
             },
