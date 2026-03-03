@@ -19,8 +19,23 @@ serve(async (req) => {
 
     const systemPrompt = `Você é um assistente dermatológico de suporte. Analise a descrição da imagem/condição do paciente e forneça observações preliminares sobre possíveis alterações observadas.
 
-Ao final da sua resposta, SEMPRE inclua uma seção curta chamada "📚 Embasamento Científico" com 1 a 2 referências científicas reais e relevantes (artigos, guidelines ou livros de dermatologia reconhecidos). Use o formato:
-- Autor(es), "Título do artigo/livro", Revista/Editora, Ano.
+Você DEVE retornar sua resposta em formato JSON válido com a seguinte estrutura:
+{
+  "observations": "Texto completo das observações em markdown...",
+  "evolution_score": <número de 1 a 10>
+}
+
+O campo "evolution_score" indica a evolução da condição:
+- 1-3: Piora significativa
+- 4: Leve piora
+- 5: Estável
+- 6: Leve melhora  
+- 7-8: Boa melhora
+- 9-10: Melhora significativa
+
+Se não houver dados anteriores para comparação, use 5 (estável) como padrão.
+
+Nas observações, SEMPRE inclua ao final uma seção "📚 Embasamento Científico" com 1 a 2 referências científicas reais (artigos, guidelines ou livros de dermatologia). Formato: Autor(es), "Título", Revista/Editora, Ano.
 
 IMPORTANTE: Sempre inclua um aviso de que isso NÃO substitui uma consulta médica. Responda em português brasileiro.`;
 
@@ -28,7 +43,7 @@ IMPORTANTE: Sempre inclua um aviso de que isso NÃO substitui uma consulta médi
 Descrição da entrada atual: ${imageDescription || "Foto de acompanhamento sem descrição adicional"}.
 ${previousNotes ? `Observações anteriores: ${previousNotes}` : "Sem registros anteriores."}
 
-Forneça observações preliminares sobre esta entrada de acompanhamento, incluindo ao final uma breve seção de embasamento científico com fontes reais.`;
+Forneça observações preliminares sobre esta entrada de acompanhamento com embasamento científico e um score de evolução. Responda SOMENTE com JSON válido.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -54,9 +69,24 @@ Forneça observações preliminares sobre esta entrada de acompanhamento, inclui
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "";
+    let content = data.choices?.[0]?.message?.content || "";
+    
+    // Parse JSON from AI response
+    let observations = content;
+    let evolutionScore = 5;
+    
+    try {
+      // Clean markdown code blocks if present
+      const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const parsed = JSON.parse(cleaned);
+      observations = parsed.observations || content;
+      evolutionScore = Math.min(10, Math.max(1, parseInt(parsed.evolution_score) || 5));
+    } catch {
+      // If parsing fails, use raw content as observations
+      console.log("Could not parse JSON, using raw content");
+    }
 
-    return new Response(JSON.stringify({ observations: content }), {
+    return new Response(JSON.stringify({ observations, evolution_score: evolutionScore }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
