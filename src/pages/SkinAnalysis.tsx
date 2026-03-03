@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Camera, Upload, Loader2, AlertTriangle, Heart, Droplets, Sun, ArrowRight, RefreshCw } from "lucide-react";
+import { Camera, Upload, Loader2, AlertTriangle, Heart, Droplets, Sun, ArrowRight, RefreshCw, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,14 @@ interface Recommendation {
   priority: string;
 }
 
+interface SuggestedProduct {
+  product_name: string;
+  brand: string;
+  category: string;
+  reason: string;
+  price_range: string;
+}
+
 interface AnalysisResult {
   skin_type: string;
   tone: string;
@@ -29,6 +37,7 @@ interface AnalysisResult {
   health_score: number;
   conditions: Condition[];
   recommendations: Recommendation[];
+  suggested_products?: SuggestedProduct[];
   summary: string;
 }
 
@@ -274,6 +283,37 @@ const SkinAnalysis = () => {
                   ))}
                 </CardContent>
               </Card>
+
+              {/* Suggested Products */}
+              {result.suggested_products && result.suggested_products.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="font-serif text-base flex items-center gap-2">
+                      <ShoppingBag className="w-4 h-4 text-primary" /> Produtos Recomendados
+                    </CardTitle>
+                    <CardDescription>Produtos sugeridos pela IA com base na sua análise de pele</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {result.suggested_products.map((p, i) => (
+                      <div key={i} className="p-4 rounded-lg border border-border hover:border-primary/20 transition-colors">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <p className="font-medium text-sm">{p.product_name}</p>
+                              <Badge variant="outline" className="text-[10px]">{p.category}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-2">{p.brand}</p>
+                            <p className="text-sm text-muted-foreground">{p.reason}</p>
+                          </div>
+                          <Badge variant="secondary" className="text-xs whitespace-nowrap flex-shrink-0">
+                            {p.price_range}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
 
               <div className="flex gap-3 justify-center">
                 <Button onClick={() => { setResult(null); setImage(null); }}>
