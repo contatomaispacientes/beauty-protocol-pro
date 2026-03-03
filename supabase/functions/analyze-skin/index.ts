@@ -35,7 +35,8 @@ IMPORTANTE:
 - SEMPRE sugira produtos cosméticos reais (nome do produto + marca) para cada condição identificada, considerando produtos disponíveis no Brasil (nacionais e importados)
 - Inclua de 3 a 6 produtos recomendados, com categoria de uso (limpeza, hidratação, tratamento, proteção solar, etc.)
 - Responda SEMPRE em português brasileiro
-- NUNCA faça diagnósticos definitivos — use termos como "aparente", "sugestivo de", "possível"`;
+- NUNCA faça diagnósticos definitivos — use termos como "aparente", "sugestivo de", "possível"
+- Ao final do campo "summary", SEMPRE inclua uma breve seção "📚 Embasamento Científico" com 1-2 referências científicas reais e relevantes (artigos, guidelines dermatológicos ou livros reconhecidos). Formato: Autor(es), "Título", Revista/Editora, Ano.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
