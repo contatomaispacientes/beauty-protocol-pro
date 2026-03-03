@@ -117,6 +117,7 @@ export type Database = {
           created_by: string
           description: string | null
           entry_type: string
+          evolution_score: number | null
           id: string
           image_url: string | null
           patient_id: string
@@ -131,6 +132,7 @@ export type Database = {
           created_by: string
           description?: string | null
           entry_type?: string
+          evolution_score?: number | null
           id?: string
           image_url?: string | null
           patient_id: string
@@ -145,6 +147,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           entry_type?: string
+          evolution_score?: number | null
           id?: string
           image_url?: string | null
           patient_id?: string
