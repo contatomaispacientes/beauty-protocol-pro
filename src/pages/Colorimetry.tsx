@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Loader2, Sparkles, Globe, Tag } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, Sparkles, Globe, Tag, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -37,13 +39,26 @@ const originBadgeVariant = (origin: string): "default" | "secondary" | "outline"
   return "outline";
 };
 
+const skinConcerns = [
+  "Pele oleosa", "Pele seca", "Acne / espinhas", "Manchas", "Rosácea",
+  "Poros dilatados", "Sensibilidade", "Olheiras",
+];
+
 const Colorimetry = () => {
   const [selectedSeason, setSelectedSeason] = useState<SeasonKey>("Outono");
   const [skinTone, setSkinTone] = useState("médio");
   const [skinSubtone, setSkinSubtone] = useState("quente");
+  const [observations, setObservations] = useState("");
+  const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
   const [recommendations, setRecommendations] = useState<MakeupCategory[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  const toggleConcern = (concern: string) => {
+    setSelectedConcerns((prev) =>
+      prev.includes(concern) ? prev.filter((c) => c !== concern) : [...prev, concern]
+    );
+  };
 
   const season = seasons[selectedSeason];
 
@@ -52,7 +67,13 @@ const Colorimetry = () => {
     setRecommendations([]);
     try {
       const { data, error } = await supabase.functions.invoke("makeup-recommendations", {
-        body: { season: selectedSeason, skinTone, skinSubtone },
+        body: {
+          season: selectedSeason,
+          skinTone,
+          skinSubtone,
+          concerns: selectedConcerns,
+          observations: observations.trim() || undefined,
+        },
       });
       if (error) {
         toast({ title: "Erro", description: error.message, variant: "destructive" });
@@ -150,12 +171,53 @@ const Colorimetry = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-end">
-                <Button onClick={fetchRecommendations} disabled={loading} className="w-full">
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
-                  Buscar Produtos
-                </Button>
+            </div>
+
+            {/* Concerns & Observations */}
+            <div className="space-y-4 pt-2 border-t border-border">
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-primary" />
+                  Preocupações com a pele
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {skinConcerns.map((concern) => (
+                    <button
+                      key={concern}
+                      type="button"
+                      onClick={() => toggleConcern(concern)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        selectedConcerns.includes(concern)
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-muted/50 text-muted-foreground border-border hover:border-primary/30"
+                      }`}
+                    >
+                      {concern}
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="observations">Observações pessoais (opcional)</Label>
+                <Textarea
+                  id="observations"
+                  value={observations}
+                  onChange={(e) => setObservations(e.target.value)}
+                  placeholder="Ex: Tenho preferência pela marca Vult, minha pele está muito oleosa na zona T, prefiro produtos veganos, estou com muita espinha no queixo..."
+                  rows={3}
+                  maxLength={500}
+                  className="resize-none"
+                />
+                <p className="text-xs text-muted-foreground">{observations.length}/500 caracteres</p>
+              </div>
+            </div>
+
+            <div>
+              <Button onClick={fetchRecommendations} disabled={loading} className="w-full sm:w-auto">
+                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                Buscar Produtos Personalizados
+              </Button>
             </div>
 
             {loading && (
