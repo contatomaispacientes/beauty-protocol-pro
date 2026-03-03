@@ -8,6 +8,7 @@ import { Loader2, ArrowLeft, Camera, FileText, Brain, Calendar, ImageIcon, Print
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import ReactMarkdown from "react-markdown";
 
 interface TimelineEntry {
   id: string;
@@ -119,7 +120,7 @@ const AdminPatientTimeline = () => {
                           <p className="text-xs font-medium text-primary flex items-center gap-1 mb-1">
                             <Brain className="w-3 h-3" /> Observações da IA
                           </p>
-                          <p className="text-xs text-muted-foreground whitespace-pre-line">{entry.ai_observations}</p>
+                          <div className="text-xs text-muted-foreground prose prose-xs max-w-none"><ReactMarkdown>{entry.ai_observations}</ReactMarkdown></div>
                         </div>
                       )}
                     </CardContent>

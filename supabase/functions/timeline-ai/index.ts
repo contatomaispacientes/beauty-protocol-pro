@@ -17,13 +17,18 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `Você é um assistente dermatológico de suporte. Analise a descrição da imagem/condição do paciente e forneça observações preliminares sobre possíveis alterações observadas. IMPORTANTE: Sempre inclua um aviso de que isso NÃO substitui uma consulta médica. Responda em português brasileiro.`;
+    const systemPrompt = `Você é um assistente dermatológico de suporte. Analise a descrição da imagem/condição do paciente e forneça observações preliminares sobre possíveis alterações observadas.
+
+Ao final da sua resposta, SEMPRE inclua uma seção curta chamada "📚 Embasamento Científico" com 1 a 2 referências científicas reais e relevantes (artigos, guidelines ou livros de dermatologia reconhecidos). Use o formato:
+- Autor(es), "Título do artigo/livro", Revista/Editora, Ano.
+
+IMPORTANTE: Sempre inclua um aviso de que isso NÃO substitui uma consulta médica. Responda em português brasileiro.`;
 
     const userPrompt = `Condição acompanhada: ${conditionTag || "não especificada"}.
 Descrição da entrada atual: ${imageDescription || "Foto de acompanhamento sem descrição adicional"}.
 ${previousNotes ? `Observações anteriores: ${previousNotes}` : "Sem registros anteriores."}
 
-Forneça observações preliminares sobre esta entrada de acompanhamento.`;
+Forneça observações preliminares sobre esta entrada de acompanhamento, incluindo ao final uma breve seção de embasamento científico com fontes reais.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

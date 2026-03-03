@@ -17,7 +17,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `Você é um especialista em colorimetria pessoal e maquiagem. Forneça recomendações de produtos REAIS disponíveis no mercado brasileiro (nacionais e importados, incluindo K-Beauty/coreanos). Use nomes de produtos e tons reais. Considere as preocupações e observações pessoais da usuária ao recomendar. Responda em português brasileiro.`;
+    const systemPrompt = `Você é um especialista em colorimetria pessoal e maquiagem. Forneça recomendações de produtos REAIS disponíveis no mercado brasileiro (nacionais e importados, incluindo K-Beauty/coreanos). Use nomes de produtos e tons reais. Considere as preocupações e observações pessoais da usuária ao recomendar. Responda em português brasileiro. Ao recomendar, inclua no campo "scientific_note" uma breve nota com embasamento científico (1-2 referências reais sobre colorimetria ou dermocosmética). Formato: Autor(es), "Título", Revista/Editora, Ano.`;
 
     let userPrompt = `A usuária tem estação de colorimetria "${season || "Outono"}", tom de pele "${skinTone || "médio"}" e subtom "${skinSubtone || "quente"}".`;
     if (priceRange) userPrompt += ` Faixa de preço preferida: ${priceRange}.`;
@@ -72,8 +72,12 @@ serve(async (req) => {
                       additionalProperties: false,
                     },
                   },
+                  scientific_note: {
+                    type: "string",
+                    description: "Breve nota com embasamento científico e 1-2 referências reais sobre colorimetria ou dermocosmética."
+                  },
                 },
-                required: ["recommendations"],
+                required: ["recommendations", "scientific_note"],
                 additionalProperties: false,
               },
             },

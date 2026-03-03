@@ -59,6 +59,7 @@ const Colorimetry = () => {
   const [observations, setObservations] = useState("");
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
   const [recommendations, setRecommendations] = useState<MakeupCategory[]>([]);
+  const [scientificNote, setScientificNote] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -73,6 +74,7 @@ const Colorimetry = () => {
   const fetchRecommendations = async () => {
     setLoading(true);
     setRecommendations([]);
+    setScientificNote(null);
     try {
       const { data, error } = await supabase.functions.invoke("makeup-recommendations", {
         body: {
@@ -90,6 +92,7 @@ const Colorimetry = () => {
         toast({ title: "Erro", description: data.error, variant: "destructive" });
       } else {
         setRecommendations(data.recommendations || []);
+        setScientificNote(data.scientific_note || null);
       }
     } catch {
       toast({ title: "Erro inesperado", variant: "destructive" });
@@ -274,6 +277,15 @@ const Colorimetry = () => {
                     </div>
                   </div>
                 ))}
+
+                {scientificNote && (
+                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                    <p className="text-xs font-medium text-primary flex items-center gap-1 mb-2">
+                      📚 Embasamento Científico
+                    </p>
+                    <p className="text-xs text-muted-foreground whitespace-pre-line">{scientificNote}</p>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
