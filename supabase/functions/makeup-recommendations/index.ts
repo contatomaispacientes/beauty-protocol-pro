@@ -12,14 +12,18 @@ serve(async (req) => {
   }
 
   try {
-    const { season, skinTone, skinSubtone } = await req.json();
+    const { season, skinTone, skinSubtone, priceRange, concerns, observations } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `Você é um especialista em colorimetria pessoal e maquiagem. Forneça recomendações de produtos REAIS disponíveis no mercado brasileiro (nacionais e importados, incluindo K-Beauty/coreanos). Use nomes de produtos e tons reais. Responda em português brasileiro.`;
+    const systemPrompt = `Você é um especialista em colorimetria pessoal e maquiagem. Forneça recomendações de produtos REAIS disponíveis no mercado brasileiro (nacionais e importados, incluindo K-Beauty/coreanos). Use nomes de produtos e tons reais. Considere as preocupações e observações pessoais da usuária ao recomendar. Responda em português brasileiro.`;
 
-    const userPrompt = `A usuária tem estação de colorimetria "${season || "Outono"}", tom de pele "${skinTone || "médio"}" e subtom "${skinSubtone || "quente"}". Recomende produtos de maquiagem reais com nomes, marcas e tons específicos.`;
+    let userPrompt = `A usuária tem estação de colorimetria "${season || "Outono"}", tom de pele "${skinTone || "médio"}" e subtom "${skinSubtone || "quente"}".`;
+    if (priceRange) userPrompt += ` Faixa de preço preferida: ${priceRange}.`;
+    if (concerns?.length) userPrompt += ` Preocupações com a pele: ${concerns.join(", ")}.`;
+    if (observations) userPrompt += ` Observações pessoais: ${observations}`;
+    userPrompt += ` Recomende produtos de maquiagem reais com nomes, marcas e tons específicos.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

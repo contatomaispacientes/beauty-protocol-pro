@@ -44,10 +44,18 @@ const skinConcerns = [
   "Poros dilatados", "Sensibilidade", "Olheiras",
 ];
 
+const priceOptions = [
+  { value: "all", label: "Todos os preços" },
+  { value: "$", label: "$ — Econômico" },
+  { value: "$$", label: "$$ — Intermediário" },
+  { value: "$$$", label: "$$$ — Premium" },
+];
+
 const Colorimetry = () => {
   const [selectedSeason, setSelectedSeason] = useState<SeasonKey>("Outono");
   const [skinTone, setSkinTone] = useState("médio");
   const [skinSubtone, setSkinSubtone] = useState("quente");
+  const [priceRange, setPriceRange] = useState("all");
   const [observations, setObservations] = useState("");
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
   const [recommendations, setRecommendations] = useState<MakeupCategory[]>([]);
@@ -71,6 +79,7 @@ const Colorimetry = () => {
           season: selectedSeason,
           skinTone,
           skinSubtone,
+          priceRange: priceRange !== "all" ? priceRange : undefined,
           concerns: selectedConcerns,
           observations: observations.trim() || undefined,
         },
@@ -148,7 +157,7 @@ const Colorimetry = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label>Tom de pele</Label>
                 <Select value={skinTone} onValueChange={setSkinTone}>
@@ -167,6 +176,17 @@ const Colorimetry = () => {
                   <SelectContent>
                     {["quente", "frio", "neutro", "oliva"].map(s => (
                       <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Faixa de preço</Label>
+                <Select value={priceRange} onValueChange={setPriceRange}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {priceOptions.map(p => (
+                      <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
