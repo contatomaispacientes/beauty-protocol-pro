@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Camera, Upload, Loader2, AlertTriangle, Heart, Droplets, Sun, ArrowRight, RefreshCw, ShoppingBag } from "lucide-react";
+import CameraCapture from "@/components/CameraCapture";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -58,7 +59,6 @@ const SkinAnalysis = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [showCamera, setShowCamera] = useState(false);
   const { toast } = useToast();
 
@@ -75,26 +75,8 @@ const SkinAnalysis = () => {
     }
   };
 
-  const startCamera = async () => {
-    setShowCamera(true);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-      if (videoRef.current) videoRef.current.srcObject = stream;
-    } catch {
-      setShowCamera(false);
-      toast({ variant: "destructive", title: "Câmera indisponível", description: "Permita o acesso à câmera." });
-    }
-  };
-
-  const capturePhoto = () => {
-    if (!videoRef.current) return;
-    const canvas = document.createElement("canvas");
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
-    setImage(canvas.toDataURL("image/jpeg"));
-    const stream = videoRef.current.srcObject as MediaStream;
-    stream?.getTracks().forEach((t) => t.stop());
+  const handleCameraCapture = (dataUrl: string) => {
+    setImage(dataUrl);
     setShowCamera(false);
   };
 
@@ -156,7 +138,7 @@ const SkinAnalysis = () => {
                   </Card>
                   <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
 
-                  <Card className="cursor-pointer hover:shadow-md hover:border-primary/20 transition-all" onClick={startCamera}>
+                  <Card className="cursor-pointer hover:shadow-md hover:border-primary/20 transition-all" onClick={() => setShowCamera(true)}>
                     <CardContent className="flex flex-col items-center justify-center py-12">
                       <div className="w-16 h-16 rounded-full bg-rose-soft flex items-center justify-center mb-4">
                         <Camera className="w-7 h-7 text-foreground/70" />
@@ -182,11 +164,11 @@ const SkinAnalysis = () => {
 
               {showCamera && (
                 <Card className="mt-4">
-                  <CardContent className="py-6 space-y-4">
-                    <video ref={videoRef} autoPlay playsInline className="max-w-sm mx-auto rounded-lg" />
-                    <div className="flex justify-center">
-                      <Button onClick={capturePhoto}>Capturar foto</Button>
-                    </div>
+                  <CardContent className="py-4">
+                    <CameraCapture
+                      onCapture={handleCameraCapture}
+                      onClose={() => setShowCamera(false)}
+                    />
                   </CardContent>
                 </Card>
               )}
