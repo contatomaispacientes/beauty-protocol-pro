@@ -37,6 +37,9 @@ import SuperAdminFeatures from "./pages/super-admin/SuperAdminFeatures";
 import SuperAdminStats from "./pages/super-admin/SuperAdminStats";
 import SuperAdminPlatform from "./pages/super-admin/SuperAdminPlatform";
 import SitePage from "./pages/SitePage";
+import About from "./pages/About";
+import Professionals from "./pages/Professionals";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +57,9 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/professionals" element={<Professionals />} />
+          <Route path="/contact" element={<Contact />} />
 
           {/* Patient (user) routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

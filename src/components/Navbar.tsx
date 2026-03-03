@@ -12,9 +12,9 @@ const Navbar = () => {
 
   const links = [
     { label: "Início", href: "/" },
-    { label: "Recursos", href: "#features" },
-    { label: "Como funciona", href: "#how-it-works" },
-    { label: "Profissionais", href: "#professionals" },
+    { label: "Sobre", href: "/about" },
+    { label: "Profissionais", href: "/professionals" },
+    { label: "Contato", href: "/contact" },
   ];
 
   return (
@@ -28,13 +28,13 @@ const Navbar = () => {
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-8">
           {links.map((link) => (
-            <a
+            <Link
               key={link.label}
-              href={link.href}
+              to={link.href}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </div>
 
@@ -64,14 +64,14 @@ const Navbar = () => {
           >
             <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
               {links.map((link) => (
-                <a
+                <Link
                   key={link.label}
-                  href={link.href}
+                  to={link.href}
                   className="text-sm text-muted-foreground hover:text-foreground py-2"
                   onClick={() => setIsOpen(false)}
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
               <div className="flex flex-col gap-2 pt-2 border-t border-border">
                 <Button variant="outline" asChild>
