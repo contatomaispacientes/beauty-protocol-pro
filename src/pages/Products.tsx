@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Loader2, FlaskConical, Baby, ShieldCheck, AlertTriangle, Droplets, Leaf } from "lucide-react";
+import { Search, Loader2, FlaskConical, Baby, ShieldCheck, AlertTriangle, Droplets, Leaf, Camera, Upload, X, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,6 +29,7 @@ interface ProductResult {
   ingredients: ProductIngredient[];
   safety: ProductSafety;
   verdict: string;
+  image_url?: string;
 }
 
 const safetyTagConfig: { key: keyof ProductSafety; label: string; icon: React.ReactNode }[] = [
@@ -50,25 +51,54 @@ const Products = () => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ProductResult | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const handleImageFile = (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Imagem muito grande", description: "Máximo de 5MB.", variant: "destructive" });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setImagePreview(dataUrl);
+      setImageBase64(dataUrl.split(",")[1]);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearImage = () => {
+    setImagePreview(null);
+    setImageBase64(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (!query.trim() && !imageBase64) return;
     setLoading(true);
     setResult(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke("analyze-product", {
-        body: { productName: query.trim() },
-      });
+      const body: Record<string, string> = {};
+      if (query.trim()) body.productName = query.trim();
+      if (imageBase64) body.productImage = imageBase64;
+
+      const { data, error } = await supabase.functions.invoke("analyze-product", { body });
 
       if (error) {
         toast({ title: "Erro na análise", description: error.message, variant: "destructive" });
       } else if (data?.error) {
         toast({ title: "Erro", description: data.error, variant: "destructive" });
       } else {
-        setResult(data as ProductResult);
+        const resultData = data as ProductResult;
+        if (imagePreview) resultData.image_url = imagePreview;
+        setResult(resultData);
       }
     } catch {
       toast({ title: "Erro inesperado", description: "Tente novamente.", variant: "destructive" });
@@ -81,25 +111,81 @@ const Products = () => {
     <DashboardLayout title="Análise de Produtos">
       <div className="max-w-3xl mx-auto space-y-6">
         <p className="text-muted-foreground">
-          Insira o nome de um produto cosmético e a IA analisará seus ingredientes, segurança e compatibilidade.
+          Insira o nome ou envie uma foto do produto. A IA analisará ingredientes, segurança e compatibilidade.
         </p>
 
-        <form onSubmit={handleSearch} className="flex gap-3">
-          <Input
-            placeholder="Ex: Sérum Hidratante La Roche-Posay Hyalu B5"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="flex-1"
-          />
-          <Button type="submit" disabled={loading}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-          </Button>
+        <form onSubmit={handleSearch} className="space-y-4">
+          <div className="flex gap-3">
+            <Input
+              placeholder="Ex: Sérum Hidratante La Roche-Posay Hyalu B5"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="flex-1"
+            />
+            <Button type="submit" disabled={loading || (!query.trim() && !imageBase64)}>
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            </Button>
+          </div>
+
+          {/* Image upload area */}
+          {!imagePreview ? (
+            <div className="flex gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleImageFile(e.target.files[0])}
+              />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleImageFile(e.target.files[0])}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 py-5"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Enviar foto
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 py-5"
+                onClick={() => cameraInputRef.current?.click()}
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                Tirar foto
+              </Button>
+            </div>
+          ) : (
+            <div className="relative">
+              <div className="rounded-xl border border-border overflow-hidden bg-muted/30">
+                <img src={imagePreview} alt="Produto" className="w-full max-h-64 object-contain" />
+              </div>
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2 w-8 h-8 rounded-full"
+                onClick={clearImage}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </form>
 
         {loading && (
           <div className="text-center py-8">
             <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary mb-3" />
-            <p className="text-sm text-muted-foreground">Analisando ingredientes com IA...</p>
+            <p className="text-sm text-muted-foreground">Analisando produto com IA...</p>
           </div>
         )}
 
@@ -115,11 +201,18 @@ const Products = () => {
 
             <Card>
               <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-peach flex items-center justify-center">
-                    <FlaskConical className="w-5 h-5 text-foreground/70" />
-                  </div>
-                  <div>
+                <div className="flex items-start gap-4">
+                  {/* Product image */}
+                  {result.image_url ? (
+                    <div className="w-20 h-20 rounded-xl overflow-hidden border border-border flex-shrink-0 bg-muted">
+                      <img src={result.image_url} alt={result.product_name} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-20 h-20 rounded-xl bg-peach flex items-center justify-center flex-shrink-0">
+                      <FlaskConical className="w-8 h-8 text-foreground/50" />
+                    </div>
+                  )}
+                  <div className="min-w-0">
                     <CardTitle className="font-serif text-lg">{result.product_name}</CardTitle>
                     <CardDescription>{result.brand}</CardDescription>
                   </div>

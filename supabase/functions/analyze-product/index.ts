@@ -12,9 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { productName } = await req.json();
-    if (!productName || typeof productName !== "string") {
-      return new Response(JSON.stringify({ error: "productName is required" }), {
+    const { productName, productImage } = await req.json();
+    if (!productName && !productImage) {
+      return new Response(JSON.stringify({ error: "productName ou productImage é obrigatório" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -23,9 +23,30 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `Você é um especialista em cosmética e dermatologia. O usuário vai fornecer o nome de um produto cosmético. Você deve retornar uma análise detalhada usando a ferramenta fornecida. Seja preciso e baseado em informações reais do produto. Se não conhecer o produto exato, informe que não foi possível identificar o produto e sugira verificar o nome. Responda SEMPRE em português brasileiro.`;
+    const systemPrompt = `Você é um especialista em cosmética e dermatologia. O usuário vai fornecer o nome e/ou uma foto de um produto cosmético. Analise o produto usando a ferramenta fornecida. Se uma imagem for fornecida, identifique o produto pela embalagem, rótulo e ingredientes visíveis. Seja preciso e baseado em informações reais. Se não reconhecer o produto, informe. Responda SEMPRE em português brasileiro.`;
 
-    const userPrompt = `Analise o produto cosmético: "${productName}". Forneça os ingredientes principais, suas funções, e as informações de segurança.`;
+    // Build user message content
+    const userContent: Array<{ type: string; text?: string; image_url?: { url: string } }> = [];
+
+    if (productName) {
+      userContent.push({
+        type: "text",
+        text: `Analise o produto cosmético: "${productName}". Forneça os ingredientes principais, suas funções, e as informações de segurança.`,
+      });
+    }
+
+    if (productImage) {
+      userContent.push({
+        type: "text",
+        text: productName
+          ? "A imagem do produto está anexada abaixo para referência visual."
+          : "Identifique o produto na imagem abaixo e forneça uma análise completa dos ingredientes, funções e informações de segurança.",
+      });
+      userContent.push({
+        type: "image_url",
+        image_url: { url: `data:image/jpeg;base64,${productImage}` },
+      });
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -37,7 +58,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
+          { role: "user", content: userContent },
         ],
         tools: [
           {
