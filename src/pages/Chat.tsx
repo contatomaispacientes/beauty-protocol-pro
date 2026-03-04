@@ -36,62 +36,63 @@ const Chat = () => {
     setLoading(true);
 
     try {
-      // Send only user/assistant messages (not system)
       const chatMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
 
-      const response = await supabase.functions.invoke("skincare-chat", {
-        body: { messages: chatMessages },
-      });
-
-      if (response.error) throw response.error;
-
-      // Handle streaming response
-      const reader = response.data as ReadableStream;
-      if (reader && reader instanceof ReadableStream) {
-        const textDecoder = new TextDecoder();
-        const streamReader = reader.getReader();
-        let assistantContent = "";
-
-        // Add empty assistant message
-        setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
-
-        while (true) {
-          const { done, value } = await streamReader.read();
-          if (done) break;
-
-          const chunk = textDecoder.decode(value);
-          const lines = chunk.split("\n").filter((line) => line.startsWith("data: "));
-
-          for (const line of lines) {
-            const data = line.slice(6);
-            if (data === "[DONE]") continue;
-
-            try {
-              const parsed = JSON.parse(data);
-              const delta = parsed.choices?.[0]?.delta?.content;
-              if (delta) {
-                assistantContent += delta;
-                const content = assistantContent;
-                setMessages((prev) => {
-                  const copy = [...prev];
-                  copy[copy.length - 1] = { role: "assistant", content };
-                  return copy;
-                });
-              }
-            } catch {
-              // skip unparseable chunks
-            }
-          }
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/skincare-chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ messages: chatMessages }),
         }
-      } else {
-        // Fallback for non-streaming response
-        const data = response.data;
-        if (data?.choices?.[0]?.message?.content) {
-          setMessages((prev) => [...prev, { role: "assistant", content: data.choices[0].message.content }]);
-        } else if (typeof data === "string") {
-          setMessages((prev) => [...prev, { role: "assistant", content: data }]);
-        } else {
-          throw new Error("Resposta inesperada do servidor");
+      );
+
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => null);
+        throw new Error(errData?.error || `Erro do servidor (${resp.status})`);
+      }
+
+      if (!resp.body) throw new Error("Sem resposta do servidor");
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantContent = "";
+      let textBuffer = "";
+
+      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const delta = parsed.choices?.[0]?.delta?.content;
+            if (delta) {
+              assistantContent += delta;
+              const content = assistantContent;
+              setMessages((prev) => {
+                const copy = [...prev];
+                copy[copy.length - 1] = { role: "assistant", content };
+                return copy;
+              });
+            }
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
         }
       }
     } catch (err: any) {
