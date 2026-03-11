@@ -12,8 +12,12 @@ const sizeMap = {
 };
 
 const BrandingLogo = ({ size = "md", className = "" }: BrandingLogoProps) => {
-  const { branding } = useBrandingContext();
+  const { branding, loading } = useBrandingContext();
   const s = sizeMap[size];
+
+  if (loading) {
+    return <div className={`${s.fallback} ${className}`} />;
+  }
 
   if (branding.logo_url) {
     return (
