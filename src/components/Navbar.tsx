@@ -8,7 +8,7 @@ import { useBrandingContext } from "@/contexts/BrandingContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { branding } = useBrandingContext();
+  const { branding, loading } = useBrandingContext();
 
   const links = [
     { label: "Início", href: "/" },
