@@ -13,10 +13,8 @@ import Dashboard from "./pages/Dashboard";
 import Questionnaire from "./pages/Questionnaire";
 import SkinAnalysis from "./pages/SkinAnalysis";
 import Routine from "./pages/Routine";
-import Colorimetry from "./pages/Colorimetry";
 import Products from "./pages/Products";
 import Chat from "./pages/Chat";
-import Appointments from "./pages/Appointments";
 import Timeline from "./pages/Timeline";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -66,10 +64,8 @@ const App = () => (
           <Route path="/questionnaire" element={<ProtectedRoute><Questionnaire /></ProtectedRoute>} />
           <Route path="/skin-analysis" element={<ProtectedRoute><SkinAnalysis /></ProtectedRoute>} />
           <Route path="/routine" element={<ProtectedRoute><Routine /></ProtectedRoute>} />
-          <Route path="/colorimetry" element={<ProtectedRoute><Colorimetry /></ProtectedRoute>} />
           <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
-          <Route path="/appointments" element={<ProtectedRoute><Appointments /></ProtectedRoute>} />
           <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
 
           {/* Admin routes */}

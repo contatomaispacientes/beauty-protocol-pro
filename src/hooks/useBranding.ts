@@ -14,7 +14,7 @@ export interface Branding {
 
 const defaultBranding: Branding = {
   id: "",
-  site_name: "LUZ",
+  site_name: "DermAI",
   logo_url: null,
   primary_color: "#8B5CF6",
   secondary_color: "#F3E8FF",

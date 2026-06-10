@@ -8,7 +8,7 @@ import { useBrandingContext } from "@/contexts/BrandingContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { branding, loading } = useBrandingContext();
+  const { branding } = useBrandingContext();
 
   const links = [
     { label: "Início", href: "/" },
@@ -22,7 +22,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <BrandingLogo size="md" />
-          {!loading && <span className="font-serif text-xl font-semibold text-foreground">{branding.site_name}</span>}
+          <span className="font-serif text-xl font-semibold text-foreground">{branding.site_name}</span>
         </Link>
 
         {/* Desktop */}
