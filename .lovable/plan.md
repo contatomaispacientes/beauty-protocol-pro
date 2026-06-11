@@ -1,41 +1,39 @@
 ## Objetivo
-Adicionar um botão/banner de "Adicionar à Tela de Início" para usuários de iPhone (Safari), já que o iOS não exibe o prompt nativo de instalação de PWA.
+Quando o app rodar em modo PWA instalado (standalone), pular toda a parte institucional e levar direto para a tela de login (ou dashboard se autenticado), com a tela de login redesenhada de forma app-like.
 
-## O que será feito
+## Detecção PWA
+- Novo hook `src/hooks/useIsPWA.ts`:
+  - Retorna `true` se `window.matchMedia('(display-mode: standalone)').matches` OU `(navigator as any).standalone === true` (iOS).
+  - Listener para mudanças de display-mode.
 
-1. **Novo componente `IOSInstallPrompt.tsx`**
-   - Detecta se o usuário está no iOS Safari (`/iPad|iPhone|iPod/.test(navigator.userAgent)` + checagem de `standalone`).
-   - Não exibe se o app já estiver instalado (`window.navigator.standalone === true` ou `display-mode: standalone`).
-   - Mostra um banner fixo na parte inferior da tela com:
-     - Ícone do app LUZ
-     - Texto: "Instale o LUZ no seu iPhone"
-     - Instruções visuais: toque em **Compartilhar** (ícone) → **Adicionar à Tela de Início**
-     - Botão "X" para fechar
-   - Salva no `localStorage` (`luz-ios-install-dismissed`) quando o usuário fecha, para não reaparecer por X dias (ex: 7 dias).
+## Roteamento condicional
+- Novo componente `src/components/PWAGate.tsx`:
+  - Se `isPWA` e usuário acessar rota institucional (`/`, `/about`, `/professionals`, `/contact`) → `<Navigate to="/login" replace />`.
+  - Se `isPWA` e autenticado em `/login` ou `/` → `<Navigate to="/dashboard" replace />`.
+  - Caso contrário renderiza `children` normalmente.
+- `src/App.tsx`: envolver as rotas institucionais com `<PWAGate>`.
 
-2. **Novo componente `InstallAppButton.tsx`** (Android/Desktop)
-   - Captura o evento `beforeinstallprompt` (Chrome/Edge/Android).
-   - Mostra um botão "Instalar app" no Dashboard quando o evento estiver disponível.
-   - Em iOS, abre um modal com as mesmas instruções do banner.
-
-3. **Integração**
-   - Renderizar `<IOSInstallPrompt />` no `App.tsx` (global, aparece em todas as páginas após login).
-   - Adicionar `<InstallAppButton />` no `Dashboard.tsx`, próximo ao topo (visível mas discreto).
-
-4. **Design**
-   - Glassmorphism consistente com a plataforma (Playfair/Inter, cores do tema LUZ).
-   - Mobile-first, animação de slide-up via Framer Motion.
-   - Usa tokens semânticos do `index.css` (sem cores hardcoded).
+## Tela de Login app-like
+- `src/pages/Login.tsx` redesenhada:
+  - Esconde `Navbar` quando `isPWA` (layout fullscreen).
+  - Respeita safe-area do iPhone (`pt-[env(safe-area-inset-top)]`, idem bottom).
+  - Topo: logo LUZ grande centralizada com glow suave.
+  - Saudação em Playfair ("Bem-vindo de volta").
+  - Card glassmorphism, inputs `h-12` touch-friendly, botão primário full-width.
+  - Links discretos: "Esqueci minha senha" e "Criar conta".
+  - Background com gradiente sutil usando tokens semânticos (sem cores hardcoded).
+- `src/pages/Signup.tsx` e `src/pages/ForgotPassword.tsx`: aplicar mesmo tratamento (esconder Navbar em PWA, safe-area, layout consistente).
 
 ## Arquivos
 
 **Criados:**
-- `src/components/IOSInstallPrompt.tsx`
-- `src/components/InstallAppButton.tsx`
-- `src/hooks/usePWAInstall.ts` (lógica de detecção iOS/standalone/beforeinstallprompt)
+- `src/hooks/useIsPWA.ts`
+- `src/components/PWAGate.tsx`
 
 **Editados:**
-- `src/App.tsx` (montar o banner global)
-- `src/pages/Dashboard.tsx` (botão de instalar)
+- `src/App.tsx`
+- `src/pages/Login.tsx`
+- `src/pages/Signup.tsx`
+- `src/pages/ForgotPassword.tsx`
 
-Nenhuma mudança no manifest, service worker ou backend.
+Sem mudanças no manifest, backend, lógica de auth ou demais páginas autenticadas.
