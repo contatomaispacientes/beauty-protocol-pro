@@ -18,6 +18,7 @@ import Chat from "./pages/Chat";
 import Timeline from "./pages/Timeline";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import IOSInstallPrompt from "./components/IOSInstallPrompt";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -48,6 +49,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <IOSInstallPrompt />
         <Routes>
           {/* Public */}
           <Route path="/" element={<Index />} />
