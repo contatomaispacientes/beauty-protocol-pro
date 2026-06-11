@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import BrandingLogo from "@/components/BrandingLogo";
 import { useBrandingContext } from "@/contexts/BrandingContext";
+import { useIsPWA } from "@/hooks/useIsPWA";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -23,6 +24,7 @@ const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { branding } = useBrandingContext();
+  const isPWA = useIsPWA();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +71,13 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8 relative overflow-hidden">
+    <div
+      className="min-h-screen flex items-center justify-center bg-background px-4 py-8 relative overflow-hidden"
+      style={{
+        paddingTop: "max(env(safe-area-inset-top), 2rem)",
+        paddingBottom: "max(env(safe-area-inset-bottom), 2rem)",
+      }}
+    >
       {/* Background decorations */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-10 right-[10%] w-72 h-72 rounded-full bg-sage/40 blur-3xl" />
@@ -82,9 +90,9 @@ const Signup = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
+        <Link to={isPWA ? "/login" : "/"} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" />
-          Voltar ao início
+          {isPWA ? "Voltar ao login" : "Voltar ao início"}
         </Link>
 
         <Card className="shadow-lg border-border/50">
