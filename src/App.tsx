@@ -19,6 +19,7 @@ import Timeline from "./pages/Timeline";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import IOSInstallPrompt from "./components/IOSInstallPrompt";
+import PWAGate from "./components/PWAGate";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -52,14 +53,14 @@ const App = () => (
         <IOSInstallPrompt />
         <Routes>
           {/* Public */}
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<PWAGate><Index /></PWAGate>} />
+          <Route path="/login" element={<PWAGate redirectAuthedToDashboard><Login /></PWAGate>} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/professionals" element={<Professionals />} />
-          <Route path="/contact" element={<Contact />} />
+          <Route path="/about" element={<PWAGate><About /></PWAGate>} />
+          <Route path="/professionals" element={<PWAGate><Professionals /></PWAGate>} />
+          <Route path="/contact" element={<PWAGate><Contact /></PWAGate>} />
 
           {/* Patient (user) routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
