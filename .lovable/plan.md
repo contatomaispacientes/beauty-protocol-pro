@@ -1,45 +1,41 @@
-# Plano: Simplificar plataforma LUZ — foco no usuário final
-
 ## Objetivo
-Remover funcionalidades de **vínculo com clínica**, **agendamentos** e **colorimetria/maquiagem** da experiência do paciente, mantendo o foco em suporte à saúde da pele (questionário, análise por IA, rotina, análise de produtos, chat IA, prontuário/timeline).
+Adicionar um botão/banner de "Adicionar à Tela de Início" para usuários de iPhone (Safari), já que o iOS não exibe o prompt nativo de instalação de PWA.
 
-## O que será removido da experiência do paciente
+## O que será feito
 
-### 1. Colorimetria e Maquiagem
-- Remover rota `/colorimetry` do `App.tsx`
-- Remover item "Colorimetria e Maquiagem" do menu lateral (`AppSidebar.tsx`)
-- Remover card "Colorimetria e Maquiagem" do `Dashboard.tsx`
-- Excluir o arquivo `src/pages/Colorimetry.tsx`
+1. **Novo componente `IOSInstallPrompt.tsx`**
+   - Detecta se o usuário está no iOS Safari (`/iPad|iPhone|iPod/.test(navigator.userAgent)` + checagem de `standalone`).
+   - Não exibe se o app já estiver instalado (`window.navigator.standalone === true` ou `display-mode: standalone`).
+   - Mostra um banner fixo na parte inferior da tela com:
+     - Ícone do app LUZ
+     - Texto: "Instale o LUZ no seu iPhone"
+     - Instruções visuais: toque em **Compartilhar** (ícone) → **Adicionar à Tela de Início**
+     - Botão "X" para fechar
+   - Salva no `localStorage` (`luz-ios-install-dismissed`) quando o usuário fecha, para não reaparecer por X dias (ex: 7 dias).
 
-### 2. Agendamentos
-- Remover rota `/appointments` do `App.tsx`
-- Remover item "Agendamentos" do menu lateral
-- Excluir `src/pages/Appointments.tsx`
+2. **Novo componente `InstallAppButton.tsx`** (Android/Desktop)
+   - Captura o evento `beforeinstallprompt` (Chrome/Edge/Android).
+   - Mostra um botão "Instalar app" no Dashboard quando o evento estiver disponível.
+   - Em iOS, abre um modal com as mesmas instruções do banner.
 
-### 3. Vínculo com Clínica / "Minhas Clínicas"
-- Remover o `JoinClinicCard` do Dashboard do paciente
-- Excluir o componente `src/components/JoinClinicCard.tsx`
-- A página do paciente deixa de pedir/exibir códigos de convite de clínica
+3. **Integração**
+   - Renderizar `<IOSInstallPrompt />` no `App.tsx` (global, aparece em todas as páginas após login).
+   - Adicionar `<InstallAppButton />` no `Dashboard.tsx`, próximo ao topo (visível mas discreto).
 
-## O que será mantido (não muda)
+4. **Design**
+   - Glassmorphism consistente com a plataforma (Playfair/Inter, cores do tema LUZ).
+   - Mobile-first, animação de slide-up via Framer Motion.
+   - Usa tokens semânticos do `index.css` (sem cores hardcoded).
 
-- **Painéis Admin e Super Admin** continuam funcionando normalmente (gestão de clínicas, pacientes, convites, agendamentos administrativos, feature toggles, branding etc.). Apenas a experiência do **paciente** é simplificada.
-- Funcionalidades do paciente preservadas: Questionário, Análise de Pele (IA), Minha Rotina, Análise de Produtos, Chat com IA, Prontuário Digital (Timeline).
-- Banco de dados: **nenhuma alteração de schema**. Tabelas `tenants`, `tenant_patients`, `appointments`, `tenant_invite_codes` permanecem (ainda usadas pelo Admin/Super Admin). Apenas o paciente deixa de interagir com elas via UI.
-- Edge function `join-clinic` permanece no projeto (não é chamada pela UI do paciente, mas não atrapalha).
+## Arquivos
 
-## Detalhes técnicos
+**Criados:**
+- `src/components/IOSInstallPrompt.tsx`
+- `src/components/InstallAppButton.tsx`
+- `src/hooks/usePWAInstall.ts` (lógica de detecção iOS/standalone/beforeinstallprompt)
 
-Arquivos editados:
-- `src/App.tsx` — remover imports e rotas de `Colorimetry` e `Appointments`
-- `src/components/AppSidebar.tsx` — remover entradas de Colorimetria e Agendamentos do array `mainItems`/`toolItems`
-- `src/pages/Dashboard.tsx` — remover card de Colorimetria do `quickActions` e remover `<JoinClinicCard />`
+**Editados:**
+- `src/App.tsx` (montar o banner global)
+- `src/pages/Dashboard.tsx` (botão de instalar)
 
-Arquivos excluídos:
-- `src/pages/Colorimetry.tsx`
-- `src/pages/Appointments.tsx`
-- `src/components/JoinClinicCard.tsx`
-
-## Fora de escopo
-- Não mexer no Super Admin Feature Toggles (as chaves `colorimetry` e `appointments` podem continuar listadas lá para uso administrativo futuro; me avise se quiser removê-las também).
-- Não remover tabelas do banco.
+Nenhuma mudança no manifest, service worker ou backend.
