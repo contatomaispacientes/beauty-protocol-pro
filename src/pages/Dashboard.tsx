@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import { ClipboardList, Camera, Sparkles, FlaskConical, MessageCircle, ArrowRight, History } from "lucide-react";
+import InstallAppButton from "@/components/InstallAppButton";
 
 const quickActions = [
   { title: "Questionário de Pele", description: "Responda para traçar seu perfil", icon: ClipboardList, url: "/questionnaire", color: "bg-rose-soft" },
@@ -37,11 +38,15 @@ const Dashboard = () => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="flex items-start justify-between gap-4 flex-wrap"
         >
-          <h2 className="text-2xl md:text-3xl font-serif font-bold text-foreground">
-            Olá, {name} 👋
-          </h2>
-          <p className="text-muted-foreground mt-1">Bem-vindo à sua central de cuidados com a pele.</p>
+          <div>
+            <h2 className="text-2xl md:text-3xl font-serif font-bold text-foreground">
+              Olá, {name} 👋
+            </h2>
+            <p className="text-muted-foreground mt-1">Bem-vindo à sua central de cuidados com a pele.</p>
+          </div>
+          <InstallAppButton />
         </motion.div>
 
         {/* Quick Actions */}
