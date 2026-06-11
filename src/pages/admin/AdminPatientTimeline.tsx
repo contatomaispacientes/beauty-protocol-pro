@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import ReactMarkdown from "react-markdown";
+import { signEntryPhotos } from "@/lib/patient-photo";
 
 interface TimelineEntry {
   id: string;
@@ -50,7 +51,10 @@ const AdminPatientTimeline = () => {
       supabase.from("patient_timeline").select("*").eq("patient_id", patientId!).order("created_at", { ascending: false }),
       supabase.from("profiles").select("display_name, email").eq("user_id", patientId!).maybeSingle(),
     ]);
-    if (timelineData) setEntries(timelineData as TimelineEntry[]);
+    if (timelineData) {
+      const signed = await signEntryPhotos(timelineData as TimelineEntry[]);
+      setEntries(signed);
+    }
     if (profileData) setProfile(profileData);
     setLoading(false);
   };

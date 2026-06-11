@@ -17,6 +17,7 @@ import { ptBR } from "date-fns/locale";
 import ReactMarkdown from "react-markdown";
 import CameraCapture from "@/components/CameraCapture";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import { signEntryPhotos } from "@/lib/patient-photo";
 
 interface TimelineEntry {
   id: string;
@@ -81,7 +82,10 @@ const Timeline = () => {
       .select("*")
       .eq("patient_id", user!.id)
       .order("created_at", { ascending: false });
-    if (data) setEntries(data as TimelineEntry[]);
+    if (data) {
+      const signed = await signEntryPhotos(data as TimelineEntry[]);
+      setEntries(signed);
+    }
     setLoading(false);
   };
 
@@ -129,8 +133,8 @@ const Timeline = () => {
         setSaving(false);
         return;
       }
-      const { data: urlData } = supabase.storage.from("patient-photos").getPublicUrl(path);
-      imageUrl = urlData.publicUrl;
+      // Store the storage path; bucket is private and read via signed URLs.
+      imageUrl = path;
     }
 
     // Get AI observations + evolution score
