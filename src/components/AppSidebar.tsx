@@ -27,11 +27,14 @@ import {
   LogOut,
   Shield,
   Building2,
-  History,
+  CalendarDays,
+  Package,
 } from "lucide-react";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Meu Calendário", url: "/calendar", icon: CalendarDays },
+  { title: "Meu Armário", url: "/cabinet", icon: Package },
   { title: "Questionário", url: "/questionnaire", icon: ClipboardList },
   { title: "Análise de Pele", url: "/skin-analysis", icon: Camera },
   { title: "Minha Rotina", url: "/routine", icon: Sparkles },
@@ -40,7 +43,6 @@ const mainItems = [
 const toolItems = [
   { title: "Análise de Produtos", url: "/products", icon: FlaskConical },
   { title: "Chat com IA", url: "/chat", icon: MessageCircle },
-  { title: "Prontuário Digital", url: "/timeline", icon: History },
 ];
 
 export function AppSidebar() {
