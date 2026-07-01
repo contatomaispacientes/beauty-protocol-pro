@@ -6,53 +6,53 @@
 
 @layer base {
   :root {
-    /* Blush & Cream — LUZ editorial palette */
-    --background: 24 40% 96%;        /* #faf5f2 */
-    --foreground: 0 30% 20%;         /* deep rose ink */
+    /* Mauve & Wine — LUZ editorial palette (updated) */
+    --background: 348 20% 94%;       /* soft cream-pink */
+    --foreground: 346 30% 20%;       /* deep wine ink */
 
     --card: 0 0% 100%;
-    --card-foreground: 0 30% 20%;
+    --card-foreground: 346 30% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 30% 20%;
+    --popover-foreground: 346 30% 20%;
 
-    --primary: 0 30% 33%;            /* #6b3a3a deep rose */
-    --primary-foreground: 24 40% 97%;
+    --primary: 346 34% 36%;          /* #7a3d4e deep wine */
+    --primary-foreground: 348 30% 96%;
 
-    --secondary: 0 45% 91%;          /* #f3e0e0 blush */
-    --secondary-foreground: 0 30% 25%;
+    --secondary: 348 22% 84%;        /* light mauve */
+    --secondary-foreground: 346 30% 25%;
 
-    --muted: 24 30% 93%;
-    --muted-foreground: 0 15% 45%;
+    --muted: 348 18% 90%;
+    --muted-foreground: 346 12% 42%;
 
-    --accent: 0 45% 73%;             /* #d99b9b rose accent */
-    --accent-foreground: 0 30% 20%;
+    --accent: 352 22% 64%;           /* dusty rose */
+    --accent-foreground: 348 30% 98%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 25% 88%;
-    --input: 0 25% 88%;
-    --ring: 0 30% 33%;
+    --border: 348 18% 84%;
+    --input: 348 18% 84%;
+    --ring: 346 34% 36%;
 
     --radius: 1rem;
 
-    --sidebar-background: 24 40% 96%;
-    --sidebar-foreground: 0 20% 30%;
-    --sidebar-primary: 0 30% 33%;
-    --sidebar-primary-foreground: 24 40% 97%;
-    --sidebar-accent: 0 45% 91%;
-    --sidebar-accent-foreground: 0 30% 20%;
-    --sidebar-border: 0 25% 88%;
-    --sidebar-ring: 0 30% 33%;
+    --sidebar-background: 348 20% 94%;
+    --sidebar-foreground: 346 20% 28%;
+    --sidebar-primary: 346 34% 36%;
+    --sidebar-primary-foreground: 348 30% 96%;
+    --sidebar-accent: 348 22% 88%;
+    --sidebar-accent-foreground: 346 30% 20%;
+    --sidebar-border: 348 18% 84%;
+    --sidebar-ring: 346 34% 36%;
 
     /* Custom tokens */
-    --rose-soft: 0 45% 91%;          /* blush */
-    --peach: 24 55% 92%;
-    --sage: 150 20% 90%;
-    --lavender: 340 30% 92%;
+    --rose-soft: 348 22% 88%;
+    --peach: 348 22% 84%;
+    --sage: 352 22% 64%;
+    --lavender: 348 20% 90%;
     --gold: 40 45% 68%;
-    --cream: 30 45% 95%;
+    --cream: 348 20% 94%;
   }
 
   .dark {
