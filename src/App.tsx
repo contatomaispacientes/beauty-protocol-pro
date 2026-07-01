@@ -16,6 +16,8 @@ import Routine from "./pages/Routine";
 import Products from "./pages/Products";
 import Chat from "./pages/Chat";
 import Timeline from "./pages/Timeline";
+import Cabinet from "./pages/Cabinet";
+import CalendarPage from "./pages/CalendarPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import IOSInstallPrompt from "./components/IOSInstallPrompt";
