@@ -35,28 +35,28 @@ const primaryActions = [
 
 const secondaryActions = [
   {
+    title: "Meu Calendário",
+    subtitle: "Check-in diário",
+    icon: CalendarDays,
+    url: "/calendar",
+  },
+  {
+    title: "Meu Armário",
+    subtitle: "Seus produtos",
+    icon: Package,
+    url: "/cabinet",
+  },
+  {
     title: "Analisar Produto",
     subtitle: "Princípios ativos",
     icon: FlaskConical,
     url: "/products",
   },
   {
-    title: "Prontuário",
-    subtitle: "Evolução & histórico",
-    icon: History,
-    url: "/timeline",
-  },
-  {
     title: "Chat com IA",
     subtitle: "Tire suas dúvidas",
     icon: MessageCircle,
     url: "/chat",
-  },
-  {
-    title: "Minha Rotina",
-    subtitle: "AM · PM · Semanal",
-    icon: Sparkles,
-    url: "/routine",
   },
 ];
 
