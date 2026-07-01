@@ -67,6 +67,7 @@ export default {
         sage: "hsl(var(--sage))",
         lavender: "hsl(var(--lavender))",
         gold: "hsl(var(--gold))",
+        cream: "hsl(var(--cream))",
       },
       borderRadius: {
         lg: "var(--radius)",
