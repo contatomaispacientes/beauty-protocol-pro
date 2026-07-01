@@ -1,39 +1,18 @@
-## Objetivo
-Quando o app rodar em modo PWA instalado (standalone), pular toda a parte institucional e levar direto para a tela de login (ou dashboard se autenticado), com a tela de login redesenhada de forma app-like.
+# Corrigir erro "Resposta inesperada do servidor" no Chat
 
-## Detecção PWA
-- Novo hook `src/hooks/useIsPWA.ts`:
-  - Retorna `true` se `window.matchMedia('(display-mode: standalone)').matches` OU `(navigator as any).standalone === true` (iOS).
-  - Listener para mudanças de display-mode.
+## Causa
+O `supabase.functions.invoke()` não devolve um `ReadableStream` para respostas SSE (`text/event-stream`) — ele tenta parsear como JSON/texto. Por isso o check `reader instanceof ReadableStream` falha e cai no fallback, que também não reconhece o formato e lança "Resposta inesperada do servidor". Isso já está documentado na memória do projeto: usar `fetch` nativo para SSE.
 
-## Roteamento condicional
-- Novo componente `src/components/PWAGate.tsx`:
-  - Se `isPWA` e usuário acessar rota institucional (`/`, `/about`, `/professionals`, `/contact`) → `<Navigate to="/login" replace />`.
-  - Se `isPWA` e autenticado em `/login` ou `/` → `<Navigate to="/dashboard" replace />`.
-  - Caso contrário renderiza `children` normalmente.
-- `src/App.tsx`: envolver as rotas institucionais com `<PWAGate>`.
+## Correção
+Em `src/pages/Chat.tsx`, substituir `supabase.functions.invoke("skincare-chat", ...)` por um `fetch` direto para a Edge Function, lendo o body como stream SSE:
 
-## Tela de Login app-like
-- `src/pages/Login.tsx` redesenhada:
-  - Esconde `Navbar` quando `isPWA` (layout fullscreen).
-  - Respeita safe-area do iPhone (`pt-[env(safe-area-inset-top)]`, idem bottom).
-  - Topo: logo LUZ grande centralizada com glow suave.
-  - Saudação em Playfair ("Bem-vindo de volta").
-  - Card glassmorphism, inputs `h-12` touch-friendly, botão primário full-width.
-  - Links discretos: "Esqueci minha senha" e "Criar conta".
-  - Background com gradiente sutil usando tokens semânticos (sem cores hardcoded).
-- `src/pages/Signup.tsx` e `src/pages/ForgotPassword.tsx`: aplicar mesmo tratamento (esconder Navbar em PWA, safe-area, layout consistente).
+- URL: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/skincare-chat`
+- Headers: `Authorization: Bearer <access_token da sessão atual>`, `apikey: VITE_SUPABASE_PUBLISHABLE_KEY`, `Content-Type: application/json`
+- Ler `response.body.getReader()`, decodificar chunks, parsear linhas `data: {...}` e concatenar `choices[0].delta.content` na última mensagem do assistant (mesma lógica que já existe).
+- Tratar status 429 (limite) e 402 (créditos) com toasts/mensagens amigáveis.
+- Manter o restante da UI intacto.
 
-## Arquivos
+Nenhuma mudança na Edge Function (`skincare-chat`) — ela já faz stream corretamente.
 
-**Criados:**
-- `src/hooks/useIsPWA.ts`
-- `src/components/PWAGate.tsx`
-
-**Editados:**
-- `src/App.tsx`
-- `src/pages/Login.tsx`
-- `src/pages/Signup.tsx`
-- `src/pages/ForgotPassword.tsx`
-
-Sem mudanças no manifest, backend, lógica de auth ou demais páginas autenticadas.
+## Verificação
+Enviar uma mensagem no `/chat` e confirmar que o texto aparece incremental sem erro.

@@ -36,65 +36,71 @@ const Chat = () => {
     setLoading(true);
 
     try {
-      // Send only user/assistant messages (not system)
       const chatMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
 
-      const response = await supabase.functions.invoke("skincare-chat", {
-        body: { messages: chatMessages },
+      const { data: { session } } = await supabase.auth.getSession();
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/skincare-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${session?.access_token ?? SUPABASE_KEY}`,
+        },
+        body: JSON.stringify({ messages: chatMessages }),
       });
 
-      if (response.error) throw response.error;
+      if (!response.ok) {
+        if (response.status === 429) throw new Error("Limite de requisições excedido. Tente novamente em alguns segundos.");
+        if (response.status === 402) throw new Error("Créditos insuficientes.");
+        const errTxt = await response.text().catch(() => "");
+        throw new Error(errTxt || "Erro no chat.");
+      }
 
-      // Handle streaming response
-      const reader = response.data as ReadableStream;
-      if (reader && reader instanceof ReadableStream) {
-        const textDecoder = new TextDecoder();
-        const streamReader = reader.getReader();
-        let assistantContent = "";
+      if (!response.body) throw new Error("Resposta sem corpo.");
 
-        // Add empty assistant message
-        setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+      const reader = response.body.getReader();
+      const textDecoder = new TextDecoder();
+      let assistantContent = "";
+      let buffer = "";
 
-        while (true) {
-          const { done, value } = await streamReader.read();
-          if (done) break;
+      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
-          const chunk = textDecoder.decode(value);
-          const lines = chunk.split("\n").filter((line) => line.startsWith("data: "));
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-          for (const line of lines) {
-            const data = line.slice(6);
-            if (data === "[DONE]") continue;
+        buffer += textDecoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
 
-            try {
-              const parsed = JSON.parse(data);
-              const delta = parsed.choices?.[0]?.delta?.content;
-              if (delta) {
-                assistantContent += delta;
-                const content = assistantContent;
-                setMessages((prev) => {
-                  const copy = [...prev];
-                  copy[copy.length - 1] = { role: "assistant", content };
-                  return copy;
-                });
-              }
-            } catch {
-              // skip unparseable chunks
+        for (const raw of lines) {
+          const line = raw.trim();
+          if (!line.startsWith("data:")) continue;
+          const data = line.slice(5).trim();
+          if (!data || data === "[DONE]") continue;
+
+          try {
+            const parsed = JSON.parse(data);
+            const delta = parsed.choices?.[0]?.delta?.content;
+            if (delta) {
+              assistantContent += delta;
+              const content = assistantContent;
+              setMessages((prev) => {
+                const copy = [...prev];
+                copy[copy.length - 1] = { role: "assistant", content };
+                return copy;
+              });
             }
+          } catch {
+            // skip unparseable chunks
           }
-        }
-      } else {
-        // Fallback for non-streaming response
-        const data = response.data;
-        if (data?.choices?.[0]?.message?.content) {
-          setMessages((prev) => [...prev, { role: "assistant", content: data.choices[0].message.content }]);
-        } else if (typeof data === "string") {
-          setMessages((prev) => [...prev, { role: "assistant", content: data }]);
-        } else {
-          throw new Error("Resposta inesperada do servidor");
         }
       }
     } catch (err: any) {
+
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: `❌ Erro: ${err.message || "Não foi possível processar sua mensagem. Tente novamente."}` },
