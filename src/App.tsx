@@ -16,6 +16,8 @@ import Routine from "./pages/Routine";
 import Products from "./pages/Products";
 import Chat from "./pages/Chat";
 import Timeline from "./pages/Timeline";
+import Cabinet from "./pages/Cabinet";
+import CalendarPage from "./pages/CalendarPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import IOSInstallPrompt from "./components/IOSInstallPrompt";
@@ -70,6 +72,8 @@ const App = () => (
           <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
           <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
+          <Route path="/cabinet" element={<ProtectedRoute><Cabinet /></ProtectedRoute>} />
+          <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
 
           {/* Admin routes */}
           <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
