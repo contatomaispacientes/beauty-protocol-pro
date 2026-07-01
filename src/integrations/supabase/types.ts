@@ -282,6 +282,147 @@ export type Database = {
         }
         Relationships: []
       }
+      skincare_calendar_events: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          custom_label: string | null
+          event_date: string
+          id: string
+          is_skipped: boolean
+          moment: string
+          patient_id: string
+          product_id: string | null
+          step_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          custom_label?: string | null
+          event_date: string
+          id?: string
+          is_skipped?: boolean
+          moment: string
+          patient_id: string
+          product_id?: string | null
+          step_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          custom_label?: string | null
+          event_date?: string
+          id?: string
+          is_skipped?: boolean
+          moment?: string
+          patient_id?: string
+          product_id?: string | null
+          step_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skincare_calendar_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skincare_calendar_events_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "skincare_routine_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skincare_routine_steps: {
+        Row: {
+          created_at: string
+          custom_label: string | null
+          id: string
+          moment: string
+          order_index: number
+          patient_id: string
+          product_id: string | null
+          routine_id: string
+          suggested_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          custom_label?: string | null
+          id?: string
+          moment: string
+          order_index?: number
+          patient_id: string
+          product_id?: string | null
+          routine_id: string
+          suggested_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          custom_label?: string | null
+          id?: string
+          moment?: string
+          order_index?: number
+          patient_id?: string
+          product_id?: string | null
+          routine_id?: string
+          suggested_time?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skincare_routine_steps_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skincare_routine_steps_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "skincare_routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skincare_routines: {
+        Row: {
+          active_weekdays: number[]
+          created_at: string
+          created_by_ai: boolean
+          id: string
+          name: string
+          patient_id: string
+          updated_at: string
+        }
+        Insert: {
+          active_weekdays?: number[]
+          created_at?: string
+          created_by_ai?: boolean
+          id?: string
+          name?: string
+          patient_id: string
+          updated_at?: string
+        }
+        Update: {
+          active_weekdays?: number[]
+          created_at?: string
+          created_by_ai?: boolean
+          id?: string
+          name?: string
+          patient_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tenant_features: {
         Row: {
           created_at: string
@@ -451,6 +592,51 @@ export type Database = {
           owner_id?: string
           primary_color?: string | null
           secondary_color?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_products: {
+        Row: {
+          brand: string | null
+          category: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_archived: boolean
+          key_ingredients: string | null
+          moment: string
+          name: string
+          notes: string | null
+          patient_id: string
+          updated_at: string
+        }
+        Insert: {
+          brand?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_archived?: boolean
+          key_ingredients?: string | null
+          moment?: string
+          name: string
+          notes?: string | null
+          patient_id: string
+          updated_at?: string
+        }
+        Update: {
+          brand?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_archived?: boolean
+          key_ingredients?: string | null
+          moment?: string
+          name?: string
+          notes?: string | null
+          patient_id?: string
           updated_at?: string
         }
         Relationships: []
