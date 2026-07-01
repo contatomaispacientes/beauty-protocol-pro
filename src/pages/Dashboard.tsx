@@ -14,57 +14,22 @@ import {
   Sun,
   Moon,
   Check,
+  ScanLine,
+  Flame,
 } from "lucide-react";
 import InstallAppButton from "@/components/InstallAppButton";
 import { useState } from "react";
-
-const primaryActions = [
-  {
-    title: "Questionário",
-    subtitle: "Personalize sua jornada",
-    icon: ClipboardList,
-    url: "/questionnaire",
-  },
-  {
-    title: "Análise IA",
-    subtitle: "Scan facial profundo",
-    icon: Camera,
-    url: "/skin-analysis",
-  },
-];
+import { useRoutineScore } from "@/hooks/useRoutineScore";
 
 const secondaryActions = [
-  {
-    title: "Meu Calendário",
-    subtitle: "Check-in diário",
-    icon: CalendarDays,
-    url: "/calendar",
-  },
-  {
-    title: "Meu Armário",
-    subtitle: "Seus produtos",
-    icon: Package,
-    url: "/cabinet",
-  },
-  {
-    title: "Analisar Produto",
-    subtitle: "Princípios ativos",
-    icon: FlaskConical,
-    url: "/products",
-  },
-  {
-    title: "Chat com IA",
-    subtitle: "Tire suas dúvidas",
-    icon: MessageCircle,
-    url: "/chat",
-  },
+  { title: "Meu Calendário", subtitle: "Check-in diário", icon: CalendarDays, url: "/calendar" },
+  { title: "Meu Armário", subtitle: "Seus produtos", icon: Package, url: "/cabinet" },
+  { title: "Análise IA", subtitle: "Scan facial", icon: Camera, url: "/skin-analysis" },
+  { title: "Questionário", subtitle: "Seu perfil", icon: ClipboardList, url: "/questionnaire" },
+  { title: "Chat com IA", subtitle: "Tire dúvidas", icon: MessageCircle, url: "/chat" },
 ];
 
-const container = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.05 } },
-};
-
+const container = { hidden: {}, visible: { transition: { staggerChildren: 0.05 } } };
 const item = {
   hidden: { opacity: 0, y: 14 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
@@ -93,15 +58,16 @@ const Dashboard = () => {
   const name = user?.user_metadata?.name || "bem-vinda";
   const firstName = String(name).split(" ")[0];
   const [period, setPeriod] = useState<Period>("AM");
-  const score = 84;
+  const routineScore = useRoutineScore(7);
 
+  const scoreDisplay = routineScore.score ?? 0;
   const dash = 2 * Math.PI * 36;
-  const offset = dash - (dash * score) / 100;
+  const offset = dash - (dash * scoreDisplay) / 100;
 
   return (
     <DashboardLayout title="Dashboard">
       <div className="max-w-3xl mx-auto space-y-8">
-        {/* Header hero */}
+        {/* Header */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -121,76 +87,136 @@ const Dashboard = () => {
             </div>
             <InstallAppButton />
           </div>
+        </motion.section>
 
-          {/* Score card */}
-          <div className="relative mt-6 bg-primary text-primary-foreground rounded-3xl p-6 overflow-hidden shadow-[0_20px_60px_-30px_hsl(var(--primary)/0.6)]">
-            <div className="absolute -top-16 -right-16 w-40 h-40 bg-accent/30 rounded-full blur-3xl" />
-            <div className="relative z-10 flex items-center justify-between gap-4">
-              <div>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary-foreground/60">
-                  Skin Health Score
-                </span>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="font-display text-5xl leading-none">{score}</span>
-                  <span className="font-display italic text-lg text-primary-foreground/50">/100</span>
-                </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-300" />
-                  <span className="text-[11px] text-primary-foreground/80">
-                    Melhora de 4% esta semana
-                  </span>
-                </div>
-              </div>
-              <div className="relative w-20 h-20 shrink-0">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="4" fill="none" className="text-primary-foreground/15" />
-                  <motion.circle
-                    cx="40"
-                    cy="40"
-                    r="36"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                    strokeLinecap="round"
-                    className="text-accent"
-                    strokeDasharray={dash}
-                    initial={{ strokeDashoffset: dash }}
-                    animate={{ strokeDashoffset: offset }}
-                    transition={{ duration: 1.2, ease: "easeOut" }}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-primary-foreground/80" />
-                </div>
+        {/* HERO: Analisar Produto (função principal) */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.5 }}
+        >
+          <Link
+            to="/products"
+            className="relative block bg-primary text-primary-foreground rounded-[28px] p-7 overflow-hidden shadow-[0_25px_70px_-30px_hsl(var(--primary)/0.7)] group"
+          >
+            <div className="absolute -top-20 -right-20 w-56 h-56 bg-accent/40 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-0 w-40 h-40 opacity-20">
+              <ScanLine className="w-full h-full" strokeWidth={0.6} />
+            </div>
+            <div className="relative z-10 max-w-[75%]">
+              <span className="inline-block text-[9px] font-bold uppercase tracking-[0.28em] bg-primary-foreground/15 px-2.5 py-1 rounded-full mb-4">
+                Função principal
+              </span>
+              <h2 className="font-display italic text-4xl leading-[0.95] mb-2">
+                Analisar
+                <br />
+                um produto
+              </h2>
+              <p className="text-sm text-primary-foreground/80 mb-5 leading-snug">
+                Foto ou nome — a IA revela ativos, segurança e se combina com sua pele.
+              </p>
+              <span className="inline-flex items-center gap-2 bg-primary-foreground text-primary rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-wider group-hover:gap-3 transition-all">
+                <ScanLine className="w-4 h-4" strokeWidth={2} />
+                Escanear agora
+              </span>
+            </div>
+          </Link>
+        </motion.div>
+
+        {/* Pontuação da Rotina */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+          className="bg-card border border-border rounded-3xl p-6"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                Pontuação da rotina
+              </span>
+              {routineScore.loading ? (
+                <div className="mt-2 h-10 w-24 bg-muted animate-pulse rounded" />
+              ) : routineScore.score === null ? (
+                <>
+                  <div className="font-display italic text-3xl text-foreground mt-1">
+                    Comece hoje
+                  </div>
+                  <Link
+                    to="/calendar"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-widest text-primary mt-2 hover:gap-2 transition-all"
+                  >
+                    {routineScore.hasRoutine ? "Ativar dias da rotina" : "Criar minha rotina"}
+                    <ArrowUpRight className="w-3 h-3" />
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="font-display text-5xl leading-none text-foreground">
+                      {routineScore.score}
+                    </span>
+                    <span className="font-display italic text-lg text-muted-foreground">/100</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-2">
+                    {routineScore.completed}/{routineScore.expected} passos nos últimos{" "}
+                    {routineScore.windowDays} dias
+                  </p>
+                  {routineScore.streak >= 2 && (
+                    <div className="mt-2 inline-flex items-center gap-1.5 bg-accent/25 text-primary rounded-full px-2.5 py-1">
+                      <Flame className="w-3 h-3" strokeWidth={2.2} />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">
+                        {routineScore.streak} dias seguidos
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="relative w-24 h-24 shrink-0">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="36"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  className="text-muted"
+                />
+                <motion.circle
+                  cx="40"
+                  cy="40"
+                  r="36"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  strokeLinecap="round"
+                  className="text-primary"
+                  strokeDasharray={dash}
+                  initial={{ strokeDashoffset: dash }}
+                  animate={{ strokeDashoffset: offset }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary/70" strokeWidth={1.5} />
               </div>
             </div>
           </div>
-        </motion.section>
 
-        {/* Primary actions */}
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-2 gap-4"
-        >
-          {primaryActions.map((a) => (
-            <motion.div key={a.title} variants={item}>
-              <Link
-                to={a.url}
-                className="group flex flex-col items-start p-5 bg-card rounded-2xl border border-border/60 text-left h-full hover:border-primary/30 hover:shadow-sm transition-all"
-              >
-                <div className="w-11 h-11 bg-secondary rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                  <a.icon className="w-5 h-5 text-primary" strokeWidth={1.5} />
-                </div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                  {a.title}
-                </span>
-                <span className="text-[11px] text-muted-foreground mt-0.5">{a.subtitle}</span>
-                <ArrowUpRight className="w-4 h-4 mt-3 text-muted-foreground group-hover:text-primary transition-colors" />
-              </Link>
-            </motion.div>
-          ))}
+          <div className="mt-4 pt-4 border-t border-border/60 flex items-center justify-between">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+              Consistência gera resultado
+            </span>
+            <Link
+              to="/calendar"
+              className="text-[10px] font-semibold text-primary uppercase tracking-widest hover:underline"
+            >
+              Ver calendário →
+            </Link>
+          </div>
         </motion.div>
 
         {/* Routine plan */}
@@ -287,7 +313,7 @@ const Dashboard = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="p-6 bg-accent/40 rounded-[28px] border border-accent/50 flex gap-4"
+          className="p-6 bg-accent/30 rounded-[28px] border border-accent/40 flex gap-4"
         >
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <Sparkles className="w-5 h-5 text-primary" strokeWidth={1.5} />
@@ -303,7 +329,6 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
-        {/* Medical disclaimer */}
         <p className="text-[10px] text-muted-foreground text-center px-6 pb-4">
           Esta plataforma não substitui consulta dermatológica profissional. Sempre consulte um
           dermatologista para diagnósticos e tratamentos.
