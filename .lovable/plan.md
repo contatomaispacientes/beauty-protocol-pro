@@ -1,64 +1,70 @@
 ## Objetivo
+Atualizar a identidade visual da LUZ para a nova paleta mauve/vinho enviada e reposicionar a **Análise de Produtos** como função principal da plataforma. Substituir o "Skin Health Score" (que hoje é um número fixo/decorativo) por uma **Pontuação da Rotina** real, calculada a partir dos check-ins do calendário de skincare.
 
-Duas features novas para o paciente:
-1. **Meu Armário** — cadastro dos produtos que a pessoa usa (manual ou foto do rótulo com IA).
-2. **Meu Calendário** — substitui o "Prontuário Digital". Rotinas AM/PM recorrentes + ajustes por dia, com check-in diário e opção de gerar via IA.
+---
 
-## 1. Meu Armário
+## 1. Nova paleta de cores
+Atualizar tokens em `src/index.css` (modo claro) com base na imagem enviada:
 
-Nova rota `/cabinet` (item "Meu Armário" no sidebar, ícone de frasco).
+- Vinho profundo `#7a3d4e` → `--primary`
+- Rosa empoeirado `#b78a92` → `--accent`
+- Mauve claro `#dcccd0` → `--secondary`
+- Cream rosé `#ebe2e2` → `--background`
+- Tinta `#3a1f26` → `--foreground`
 
-**Cadastro de produto** — dialog com dois modos:
-- **Manual**: nome, marca, categoria (limpeza, hidratante, protetor solar, sérum, tratamento, tônico, esfoliante, outro), ativos principais (texto livre), momento de uso (AM/PM/ambos), notas.
-- **Foto do rótulo**: câmera ou upload → envia para nova edge function `identify-product` (Gemini 2.5 Flash multimodal) que retorna JSON estruturado (nome, marca, categoria, ativos, sugestão AM/PM). Usuário confere e edita antes de salvar.
+Tokens auxiliares (`--rose-soft`, `--peach`, `--sage`, `--lavender`, `--cream`) reajustados dentro da mesma família. Tipografia (Cormorant + Karla) e modo escuro permanecem.
 
-Lista dos produtos em cards com filtros por categoria e momento. Ações: editar, marcar como "acabou / arquivar", excluir. Foto do produto opcional (bucket `patient-photos`, path `<user_id>/cabinet/`, signed URL).
+---
 
-## 2. Meu Calendário (substitui Prontuário)
+## 2. Dashboard — Análise de Produtos como protagonista
+Reordenar `src/pages/Dashboard.tsx`:
 
-Nova rota `/calendar` — o item "Prontuário" do sidebar vira "Meu Calendário" (ícone calendar). Rotas `/timeline` continuam funcionando internamente (não removemos código médico ainda) mas somem do menu do paciente. Admin continua vendo o histórico do paciente pelo painel dele.
+1. Header "Olá, {nome} — Sua pele hoje."
+2. **Card hero "Escanear produto"** (grande, cor primária vinho) — CTA principal levando a `/products`, com texto tipo *"Descubra se um produto é ideal para você"* e botão "Escanear agora".
+3. **Card da Pontuação da Rotina** (ver seção 3).
+4. Grid "Plano de cuidados" (Manhã / Noite / Semanal) já existente — mantido.
+5. Ações secundárias (Meu Armário, Meu Calendário, Análise IA, Questionário, Chat) em grid compacto abaixo.
 
-**Modelo híbrido**:
-- **Rotina base recorrente**: passos AM e PM, cada passo referenciando um produto do armário (ou texto livre), com ordem e horário sugerido. Dias da semana em que aplica.
-- **Ajustes por dia**: adicionar/pular passo pontual numa data específica (ex.: máscara na quarta).
+Cards laterais (Análise IA, Questionário) deixam de ser "primary actions" e viram parte do grid secundário.
 
-**UI**:
-- Topo: seletor mês/semana (view semanal padrão em mobile, mensal em desktop).
-- Dia selecionado mostra timeline vertical com blocos AM e PM, cada passo com checkbox, produto, horário. Checar marca `completed_at`.
-- Barra de progresso do dia + streak (dias consecutivos com AM+PM completos).
-- Botão "Gerar com IA" abre modal com escolha:
-  - **Usar meu armário + perfil**: IA (edge function `generate-routine`) monta rotina AM/PM com os produtos cadastrados + respostas do questionário. Usuário revisa e aceita.
-  - **Sugestão genérica de passos**: IA devolve estrutura de passos (limpeza → tônico → sérum → hidratante → FPS) sem produtos; usuário vincula produtos do armário depois.
-- Botão "Editar rotina base" para configurar manualmente sem IA.
+---
 
-## Dados (backend)
+## 3. Pontuação da Rotina (substitui o Skin Health Score)
+**Fonte de dados** (já existentes no banco, nada de migration):
+- `skincare_routines` + `skincare_routine_steps` → passos ativos por dia da semana / momento (AM/PM).
+- `skincare_calendar_events` → check-ins reais do usuário (`completed_at`).
 
-Nova migration com quatro tabelas + GRANTs + RLS (padrão `patient_id = auth.uid()`):
+**Regra de cálculo (janela dos últimos 7 dias, hoje inclusive):**
+```
+esperado  = soma dos passos AM+PM em cada dia em que a rotina está ativa
+concluído = eventos com completed_at nos mesmos dias
+score     = round( concluído / esperado * 100 )   // 0–100
+```
+Casos:
+- Sem rotina configurada → score `—` e CTA "Criar sua rotina" apontando para `/calendar`.
+- `esperado = 0` na janela → score `—` com texto "Ative sua rotina no calendário".
+- Sequência (streak): dias consecutivos até hoje em que **todos** os passos previstos foram concluídos.
 
-- `user_products` — armário. Campos: patient_id, name, brand, category, key_ingredients, moment (am/pm/both), notes, image_url, is_archived.
-- `skincare_routines` — rotina base do usuário (1 por usuário, upsert). Campos: patient_id, name, active_weekdays (int[]), created_by_ai (bool).
-- `skincare_routine_steps` — passos da rotina base. Campos: routine_id, moment (am/pm), order_index, product_id (fk user_products, nullable), custom_label, suggested_time (time).
-- `skincare_calendar_events` — ajustes pontuais + logs de check-in. Campos: patient_id, event_date (date), moment, step_id (nullable — null = ajuste extra), product_id (nullable), custom_label, is_skipped (bool), completed_at (timestamptz).
+**UI do card:**
+- Título: "Pontuação da rotina".
+- Número grande 0–100 + anel circular animado (mantendo o visual atual).
+- Linha secundária: `{concluído}/{esperado} passos nos últimos 7 dias`.
+- Chip: `🔥 {streak} dias em sequência` quando ≥ 2.
+- Link "Ver calendário" → `/calendar`.
 
-Check diário grava um `skincare_calendar_events` com `completed_at` referenciando o `step_id` da rotina base (ou o próprio evento pontual).
+Hook novo `useRoutineScore()` em `src/hooks/useRoutineScore.ts` para encapsular a query e o cálculo (reutilizável).
 
-## Edge functions
+---
 
-- `identify-product` — recebe imagem (base64 ou signed URL), chama `google/gemini-2.5-flash-image` via Lovable AI, devolve JSON estruturado. CORS + validação Zod. Aviso de que não substitui leitura de bula.
-- `generate-routine` — recebe modo (`from_cabinet` | `generic`) + lista de produtos do armário + resumo do perfil, chama `google/gemini-3-flash-preview` com structured output, devolve passos AM/PM. Inclui disclaimer médico obrigatório.
+## 4. Ajustes menores para casar com a paleta
+- Revisar componentes que usavam o rose antigo (`--rose-soft`, `--peach`) para garantir contraste com o novo vinho — nenhuma cor hardcoded será adicionada; só ajuste dos tokens.
+- Sem mudanças em outras páginas além do Dashboard nesta rodada.
 
-## Frontend
+---
 
-- `src/pages/Cabinet.tsx` (nova) + `src/components/cabinet/AddProductDialog.tsx`, `ProductCard.tsx`.
-- `src/pages/Calendar.tsx` (nova) + `src/components/calendar/DayView.tsx`, `RoutineEditor.tsx`, `AIRoutineDialog.tsx`.
-- `src/components/AppSidebar.tsx`: remove "Prontuário", adiciona "Meu Armário" e "Meu Calendário".
-- `src/App.tsx`: rotas `/cabinet` e `/calendar` protegidas. Mantém `/timeline` para compatibilidade (sem link no menu do paciente).
-- `src/pages/Dashboard.tsx`: card "Prontuário" vira "Meu Calendário" e adiciona card "Meu Armário". Mostra progresso do dia (X/Y passos concluídos) no hero.
+## Arquivos afetados
+- `src/index.css` — nova paleta.
+- `src/pages/Dashboard.tsx` — reordenação + card hero de produto + card de pontuação real.
+- `src/hooks/useRoutineScore.ts` — novo hook de cálculo.
 
-Visual segue design system atual (blush & cream, Cormorant + Karla).
-
-## Escopo fora deste plano
-
-- Notificações push de lembrete (fica para depois).
-- Estatísticas/relatórios avançados de aderência.
-- Compartilhar rotina com clínica.
+Sem migrations, sem edge functions novas, sem mudanças no calendário/armário.
