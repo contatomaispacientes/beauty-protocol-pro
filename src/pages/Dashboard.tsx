@@ -8,11 +8,11 @@ import {
   Sparkles,
   FlaskConical,
   MessageCircle,
-  History,
+  CalendarDays,
+  Package,
   ArrowUpRight,
   Sun,
   Moon,
-  CalendarDays,
   Check,
 } from "lucide-react";
 import InstallAppButton from "@/components/InstallAppButton";
