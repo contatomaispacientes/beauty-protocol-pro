@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Package, CalendarDays, MessageCircle, ScanLine } from "lucide-react";
+import { LayoutDashboard, Package, CalendarDays, MessageCircle, ScanLine, type LucideIcon } from "lucide-react";
 
 const sideItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Início" },
@@ -66,7 +66,7 @@ function NavItem({
   active,
 }: {
   to: string;
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  icon: LucideIcon;
   label: string;
   active: boolean;
 }) {
