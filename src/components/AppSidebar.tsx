@@ -42,7 +42,8 @@ const mainItems = [
 
 const toolItems = [
   { title: "Análise de Produtos", url: "/products", icon: FlaskConical },
-  { title: "Chat com IA", url: "/chat", icon: MessageCircle },
+  { title: "Chat Luz", url: "/chat", icon: MessageCircle },
+  { title: "Dicas Luz Skin", url: "/blog", icon: Sparkles },
 ];
 
 export function AppSidebar() {
