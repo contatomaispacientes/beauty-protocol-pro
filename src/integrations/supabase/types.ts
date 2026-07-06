@@ -109,6 +109,45 @@ export type Database = {
           },
         ]
       }
+      blog_posts: {
+        Row: {
+          author: string | null
+          content: string
+          cover_image: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          published: boolean
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          content: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published?: boolean
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          content?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published?: boolean
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       patient_timeline: {
         Row: {
           ai_observations: string | null
@@ -201,6 +240,36 @@ export type Database = {
         }
         Relationships: []
       }
+      product_search_history: {
+        Row: {
+          analysis: Json
+          brand: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          product_name: string
+          user_id: string
+        }
+        Insert: {
+          analysis: Json
+          brand?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          product_name: string
+          user_id: string
+        }
+        Update: {
+          analysis?: Json
+          brand?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          product_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_type: string
@@ -213,6 +282,7 @@ export type Database = {
           id: string
           is_approved: boolean
           phone: string | null
+          questionnaire_completed: boolean
           region: string | null
           updated_at: string
           user_id: string
@@ -228,6 +298,7 @@ export type Database = {
           id?: string
           is_approved?: boolean
           phone?: string | null
+          questionnaire_completed?: boolean
           region?: string | null
           updated_at?: string
           user_id: string
@@ -243,6 +314,7 @@ export type Database = {
           id?: string
           is_approved?: boolean
           phone?: string | null
+          questionnaire_completed?: boolean
           region?: string | null
           updated_at?: string
           user_id?: string
