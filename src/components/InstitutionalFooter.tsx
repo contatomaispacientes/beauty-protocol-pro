@@ -41,6 +41,7 @@ const InstitutionalFooter = () => {
             <ul className="space-y-3 text-sm opacity-60">
               <li><Link to="/about" className="hover:opacity-100 transition-opacity">Sobre Nós</Link></li>
               <li><Link to="/professionals" className="hover:opacity-100 transition-opacity">Para Profissionais</Link></li>
+              <li><Link to="/blog" className="hover:opacity-100 transition-opacity">Dicas Luz Skin</Link></li>
               <li><Link to="/contact" className="hover:opacity-100 transition-opacity">Contato</Link></li>
             </ul>
           </div>

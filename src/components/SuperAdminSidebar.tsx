@@ -5,7 +5,7 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Building2, Settings, BarChart3, LogOut, User, Shield, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, Users, Building2, Settings, BarChart3, LogOut, User, Shield, ArrowLeft, Newspaper } from "lucide-react";
 import { Link } from "react-router-dom";
 import BrandingLogo from "@/components/BrandingLogo";
 import { useBrandingContext } from "@/contexts/BrandingContext";
@@ -16,6 +16,7 @@ const superAdminItems = [
   { title: "Tenants (Clínicas)", url: "/super-admin/tenants", icon: Building2 },
   { title: "Estatísticas", url: "/super-admin/stats", icon: BarChart3 },
   { title: "Funcionalidades", url: "/super-admin/features", icon: Settings },
+  { title: "Blog Luz Skin", url: "/super-admin/blog", icon: Newspaper },
   { title: "Plataforma", url: "/super-admin/platform", icon: Shield },
 ];
 
