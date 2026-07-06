@@ -312,9 +312,9 @@ const CalendarPage = () => {
         </div>
 
         {/* Progress + actions */}
-        <div className="bg-primary text-primary-foreground rounded-3xl p-5 flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary-foreground/60">
+        <div className="bg-primary text-primary-foreground rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary-foreground/60 truncate">
               {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
             </p>
             <p className="font-display text-3xl mt-1">
@@ -322,12 +322,12 @@ const CalendarPage = () => {
             </p>
             <p className="text-[11px] text-primary-foreground/80 mt-1">{progress}% concluído</p>
           </div>
-          <div className="flex flex-col gap-2">
-            <Button size="sm" variant="secondary" onClick={() => setAiOpen(true)}>
+          <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto">
+            <Button size="sm" variant="secondary" className="flex-1 sm:flex-initial" onClick={() => setAiOpen(true)}>
               <Sparkles className="w-3.5 h-3.5 mr-1.5" />
               Gerar IA
             </Button>
-            <Button size="sm" variant="outline" className="bg-transparent border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" onClick={() => setEditorOpen(true)}>
+            <Button size="sm" variant="outline" className="flex-1 sm:flex-initial bg-transparent border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" onClick={() => setEditorOpen(true)}>
               <Pencil className="w-3.5 h-3.5 mr-1.5" />
               Editar rotina
             </Button>
