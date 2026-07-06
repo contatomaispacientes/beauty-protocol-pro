@@ -77,7 +77,7 @@ const Products = () => {
       .eq("user_id", user!.id)
       .order("created_at", { ascending: false })
       .limit(10);
-    setHistory((data as HistoryItem[]) || []);
+    setHistory(((data as unknown) as HistoryItem[]) || []);
   };
 
   const handleImageFile = (file: File) => {
