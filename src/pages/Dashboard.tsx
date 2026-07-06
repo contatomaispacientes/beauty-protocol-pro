@@ -26,7 +26,7 @@ const secondaryActions = [
   { title: "Meu Armário", subtitle: "Seus produtos", icon: Package, url: "/cabinet" },
   { title: "Análise IA", subtitle: "Scan facial", icon: Camera, url: "/skin-analysis" },
   { title: "Questionário", subtitle: "Seu perfil", icon: ClipboardList, url: "/questionnaire" },
-  { title: "Chat com IA", subtitle: "Tire dúvidas", icon: MessageCircle, url: "/chat" },
+  { title: "Chat Luz", subtitle: "Tire dúvidas", icon: MessageCircle, url: "/chat" },
 ];
 
 const container = { hidden: {}, visible: { transition: { staggerChildren: 0.05 } } };

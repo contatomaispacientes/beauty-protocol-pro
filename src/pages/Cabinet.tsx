@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Loader2, Camera, Upload, Sparkles, Package, Archive, Trash2, Pencil, Sun, Moon } from "lucide-react";
+import { Plus, Loader2, Camera, Upload, Sparkles, Package, Archive, Trash2, Pencil, Sun, Moon, Wand2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -71,6 +71,8 @@ const Cabinet = () => {
   const [cameraOn, setCameraOn] = useState(false);
   const [filter, setFilter] = useState<"active" | "archived">("active");
   const [form, setForm] = useState<typeof emptyForm & { id?: string }>(emptyForm);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [cabinetInsights, setCabinetInsights] = useState<any>(null);
 
   useEffect(() => {
     if (user) fetchAll();
@@ -345,6 +347,80 @@ const Cabinet = () => {
             </DialogContent>
           </Dialog>
         </div>
+
+        {products.filter((p) => !p.is_archived).length >= 2 && (
+          <div className="space-y-3">
+            <Button
+              variant="outline"
+              className="w-full"
+              disabled={analyzing}
+              onClick={async () => {
+                setAnalyzing(true);
+                setCabinetInsights(null);
+                try {
+                  const { data, error } = await supabase.functions.invoke("analyze-cabinet");
+                  if (error) throw error;
+                  if (data?.error) throw new Error(data.error);
+                  setCabinetInsights(data);
+                } catch (e: any) {
+                  toast({ title: "Erro ao analisar", description: e.message, variant: "destructive" });
+                } finally {
+                  setAnalyzing(false);
+                }
+              }}
+            >
+              {analyzing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wand2 className="w-4 h-4 mr-2" />}
+              Analisar meu armário com IA
+            </Button>
+
+            {cabinetInsights && (
+              <div className="p-4 rounded-2xl bg-accent/10 border border-accent/30 space-y-3">
+                <div className="flex items-start gap-2">
+                  {cabinetInsights.routine_completeness?.is_complete ? (
+                    <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">
+                      {cabinetInsights.routine_completeness?.is_complete ? "Rotina completa" : "Rotina incompleta"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{cabinetInsights.routine_completeness?.summary}</p>
+                    {cabinetInsights.routine_completeness?.missing_steps?.length > 0 && (
+                      <p className="text-xs text-destructive mt-1">
+                        Falta: {cabinetInsights.routine_completeness.missing_steps.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {cabinetInsights.redundancies?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Produtos redundantes</p>
+                    {cabinetInsights.redundancies.map((r: any, i: number) => (
+                      <p key={i} className="text-sm">
+                        <span className="font-medium">{r.function}:</span> {r.recommendation}
+                      </p>
+                    ))}
+                  </div>
+                )}
+                {cabinetInsights.compatibility_summary && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Compatibilidade com seu perfil</p>
+                    <p className="text-sm">{cabinetInsights.compatibility_summary}</p>
+                  </div>
+                )}
+                {cabinetInsights.suggestions?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Sugestões</p>
+                    <ul className="text-sm space-y-1 list-disc pl-5">
+                      {cabinetInsights.suggestions.map((s: string, i: number) => <li key={i}>{s}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         <Tabs value={filter} onValueChange={(v: any) => setFilter(v)}>
           <TabsList>

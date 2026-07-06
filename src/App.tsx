@@ -42,6 +42,9 @@ import SitePage from "./pages/SitePage";
 import About from "./pages/About";
 import Professionals from "./pages/Professionals";
 import Contact from "./pages/Contact";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+import SuperAdminBlog from "./pages/super-admin/SuperAdminBlog";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +66,8 @@ const App = () => (
           <Route path="/about" element={<PWAGate><About /></PWAGate>} />
           <Route path="/professionals" element={<PWAGate><Professionals /></PWAGate>} />
           <Route path="/contact" element={<PWAGate><Contact /></PWAGate>} />
+          <Route path="/blog" element={<PWAGate><Blog /></PWAGate>} />
+          <Route path="/blog/:slug" element={<PWAGate><BlogPost /></PWAGate>} />
 
           {/* Patient (user) routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -90,6 +95,7 @@ const App = () => (
           <Route path="/super-admin/features" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminFeatures /></ProtectedRoute>} />
           <Route path="/super-admin/stats" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminStats /></ProtectedRoute>} />
           <Route path="/super-admin/platform" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminPlatform /></ProtectedRoute>} />
+          <Route path="/super-admin/blog" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminBlog /></ProtectedRoute>} />
 
           {/* Dynamic site pages */}
           <Route path="/page/:slug" element={<SitePage />} />

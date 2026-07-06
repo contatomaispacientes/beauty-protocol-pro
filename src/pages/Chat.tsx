@@ -15,7 +15,7 @@ interface Message {
 
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Olá! 👋 Sou sua assistente de skincare com IA. Posso ajudar com dúvidas sobre ingredientes, rotina, produtos e cuidados com a pele. Como posso te ajudar hoje?" },
+    { role: "assistant", content: "Olá! 👋 Eu sou a **Luz**, sua consultora de skincare com IA. Posso ajudar com dúvidas sobre ingredientes, rotina, produtos e cuidados com a pele. Como posso te ajudar hoje?" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -117,7 +117,7 @@ const Chat = () => {
   };
 
   return (
-    <DashboardLayout title="Chat com IA">
+    <DashboardLayout title="Chat Luz">
       <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-8rem)]">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto space-y-4 pb-4">

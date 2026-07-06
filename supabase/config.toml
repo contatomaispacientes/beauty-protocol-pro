@@ -26,3 +26,12 @@ verify_jwt = false
 
 [functions.generate-routine]
 verify_jwt = false
+
+[functions.fetch-product-image]
+verify_jwt = false
+
+[functions.analyze-cabinet]
+verify_jwt = false
+
+[functions.generate-blog-post]
+verify_jwt = false
