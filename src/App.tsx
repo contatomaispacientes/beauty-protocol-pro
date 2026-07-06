@@ -11,7 +11,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Questionnaire from "./pages/Questionnaire";
-import SkinAnalysis from "./pages/SkinAnalysis";
+
 import Routine from "./pages/Routine";
 import Products from "./pages/Products";
 import Chat from "./pages/Chat";
@@ -72,7 +72,7 @@ const App = () => (
           {/* Patient (user) routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/questionnaire" element={<ProtectedRoute><Questionnaire /></ProtectedRoute>} />
-          <Route path="/skin-analysis" element={<ProtectedRoute><SkinAnalysis /></ProtectedRoute>} />
+          
           <Route path="/routine" element={<ProtectedRoute><Routine /></ProtectedRoute>} />
           <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />

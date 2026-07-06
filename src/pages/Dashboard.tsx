@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import {
   ClipboardList,
-  Camera,
+  
   Sparkles,
   FlaskConical,
   MessageCircle,
@@ -24,7 +24,6 @@ import { useRoutineScore } from "@/hooks/useRoutineScore";
 const secondaryActions = [
   { title: "Meu Calendário", subtitle: "Check-in diário", icon: CalendarDays, url: "/calendar" },
   { title: "Meu Armário", subtitle: "Seus produtos", icon: Package, url: "/cabinet" },
-  { title: "Análise IA", subtitle: "Scan facial", icon: Camera, url: "/skin-analysis" },
   { title: "Questionário", subtitle: "Seu perfil", icon: ClipboardList, url: "/questionnaire" },
   { title: "Chat Luz", subtitle: "Tire dúvidas", icon: MessageCircle, url: "/chat" },
 ];
