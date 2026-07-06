@@ -15,8 +15,6 @@ verify_jwt = false
 [functions.timeline-ai]
 verify_jwt = false
 
-[functions.analyze-skin]
-verify_jwt = false
 
 [functions.skincare-chat]
 verify_jwt = false

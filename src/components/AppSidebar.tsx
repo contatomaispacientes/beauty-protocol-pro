@@ -36,7 +36,7 @@ const mainItems = [
   { title: "Meu Calendário", url: "/calendar", icon: CalendarDays },
   { title: "Meu Armário", url: "/cabinet", icon: Package },
   { title: "Questionário", url: "/questionnaire", icon: ClipboardList },
-  { title: "Análise de Pele", url: "/skin-analysis", icon: Camera },
+  
   { title: "Minha Rotina", url: "/routine", icon: Sparkles },
 ];
 

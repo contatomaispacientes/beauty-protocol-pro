@@ -9,11 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 
 const ALL_FEATURES = [
   { key: "questionnaire", label: "Questionário de Pele" },
-  { key: "skin_analysis", label: "Análise de Pele por IA" },
   { key: "routine", label: "Rotina Personalizada" },
   { key: "colorimetry", label: "Colorimetria" },
   { key: "products", label: "Análise de Produtos" },
-  { key: "chat", label: "Chat com IA" },
+  { key: "chat", label: "Chat Luz" },
   { key: "appointments", label: "Agendamentos" },
 ];
 
