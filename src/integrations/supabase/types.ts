@@ -282,6 +282,7 @@ export type Database = {
           id: string
           is_approved: boolean
           phone: string | null
+          questionnaire_answers: Json | null
           questionnaire_completed: boolean
           region: string | null
           updated_at: string
@@ -298,6 +299,7 @@ export type Database = {
           id?: string
           is_approved?: boolean
           phone?: string | null
+          questionnaire_answers?: Json | null
           questionnaire_completed?: boolean
           region?: string | null
           updated_at?: string
@@ -314,6 +316,7 @@ export type Database = {
           id?: string
           is_approved?: boolean
           phone?: string | null
+          questionnaire_answers?: Json | null
           questionnaire_completed?: boolean
           region?: string | null
           updated_at?: string
