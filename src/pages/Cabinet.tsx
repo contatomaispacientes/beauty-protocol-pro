@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Loader2, Camera, Upload, Sparkles, Package, Archive, Trash2, Pencil, Sun, Moon } from "lucide-react";
+import { Plus, Loader2, Camera, Upload, Sparkles, Package, Archive, Trash2, Pencil, Sun, Moon, Wand2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -71,6 +71,8 @@ const Cabinet = () => {
   const [cameraOn, setCameraOn] = useState(false);
   const [filter, setFilter] = useState<"active" | "archived">("active");
   const [form, setForm] = useState<typeof emptyForm & { id?: string }>(emptyForm);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [cabinetInsights, setCabinetInsights] = useState<any>(null);
 
   useEffect(() => {
     if (user) fetchAll();
