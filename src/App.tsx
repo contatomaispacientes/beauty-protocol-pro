@@ -95,6 +95,7 @@ const App = () => (
           <Route path="/super-admin/features" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminFeatures /></ProtectedRoute>} />
           <Route path="/super-admin/stats" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminStats /></ProtectedRoute>} />
           <Route path="/super-admin/platform" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminPlatform /></ProtectedRoute>} />
+          <Route path="/super-admin/blog" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminBlog /></ProtectedRoute>} />
 
           {/* Dynamic site pages */}
           <Route path="/page/:slug" element={<SitePage />} />
