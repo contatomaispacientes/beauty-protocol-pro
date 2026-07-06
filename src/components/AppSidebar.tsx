@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   ClipboardList,
-  Camera,
+  
   Sparkles,
   FlaskConical,
   MessageCircle,
