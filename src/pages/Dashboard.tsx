@@ -18,8 +18,9 @@ import {
   Flame,
 } from "lucide-react";
 import InstallAppButton from "@/components/InstallAppButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRoutineScore } from "@/hooks/useRoutineScore";
+import { supabase } from "@/integrations/supabase/client";
 
 const secondaryActions = [
   { title: "Meu Calendário", subtitle: "Check-in diário", icon: CalendarDays, url: "/calendar" },
