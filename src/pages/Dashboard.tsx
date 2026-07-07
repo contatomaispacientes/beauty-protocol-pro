@@ -344,6 +344,69 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
+        {/* Artigos do Dica Luz */}
+        {(loadingPosts || posts.length > 0) && (
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="flex items-baseline justify-between mb-4">
+              <h2 className="font-display italic text-3xl text-foreground">Artigos do Dica Luz</h2>
+              <Link
+                to="/blog"
+                className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest hover:text-primary"
+              >
+                Ver todos →
+              </Link>
+            </div>
+
+            <div className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-4 px-4 pb-2">
+              {loadingPosts
+                ? Array.from({ length: 2 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="shrink-0 w-[280px] h-[340px] rounded-3xl bg-muted animate-pulse snap-start"
+                    />
+                  ))
+                : posts.map((p) => (
+                    <Link
+                      key={p.id}
+                      to={`/blog/${p.slug}`}
+                      className="group relative shrink-0 w-[280px] h-[340px] rounded-3xl overflow-hidden shadow-[0_20px_50px_-20px_hsl(var(--foreground)/0.25)] snap-start"
+                    >
+                      {p.cover_image ? (
+                        <img
+                          src={p.cover_image}
+                          alt={p.title}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/40 flex items-center justify-center">
+                          <Sparkles className="w-12 h-12 text-primary/50" strokeWidth={1} />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                      <div className="absolute top-4 left-4 w-14 h-14 rounded-full bg-background flex items-center justify-center shadow-md">
+                        <Sparkles className="w-6 h-6 text-primary" strokeWidth={1.5} />
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                        <h3 className="font-serif text-lg leading-tight line-clamp-2 mb-2">
+                          {p.title}
+                        </h3>
+                        <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/80">
+                          {p.author && <span className="truncate max-w-[140px]">{p.author}</span>}
+                          {p.author && <span>·</span>}
+                          <time>{new Date(p.created_at).toLocaleDateString("pt-BR")}</time>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+            </div>
+          </motion.section>
+        )}
+
+
         <p className="text-[10px] text-muted-foreground text-center px-6 pb-4">
           Esta plataforma não substitui consulta dermatológica profissional. Sempre consulte um
           dermatologista para diagnósticos e tratamentos.
