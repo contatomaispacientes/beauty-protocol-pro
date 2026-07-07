@@ -335,7 +335,7 @@ const Dashboard = () => {
           </div>
           <div>
             <p className="text-[9px] font-bold text-primary uppercase tracking-widest mb-1">
-              Dica da Dra. Luz
+              Dica da Luz
             </p>
             <p className="font-display italic text-base text-foreground leading-snug">
               "Mais produtos não significam melhores resultados. Consistência sempre vence
