@@ -260,6 +260,13 @@ const CalendarPage = () => {
           </p>
         </div>
 
+        <Tabs defaultValue="agenda" className="space-y-6">
+          <TabsList className="grid grid-cols-2 w-full sm:w-auto">
+            <TabsTrigger value="agenda">Agenda</TabsTrigger>
+            <TabsTrigger value="diary">Diário da pele</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="agenda" className="space-y-6 mt-0">
         {/* Week strip */}
         <div className="flex items-center gap-2">
           <Button
