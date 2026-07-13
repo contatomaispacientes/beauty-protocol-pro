@@ -438,6 +438,12 @@ const CalendarPage = () => {
           products={products}
           onSaved={loadAll}
         />
+          </TabsContent>
+
+          <TabsContent value="diary" className="mt-0">
+            <SkinDiary />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );
