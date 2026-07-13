@@ -1,50 +1,21 @@
-## Diário da Pele — aba dentro do Calendário
+## Foto de produto no card "Analisar um produto"
 
-Espaço privado onde o usuário registra como sua pele está em um determinado dia. Só o próprio usuário vê.
+**Arquivo:** `src/pages/Dashboard.tsx` (card do hero, linhas ~113-138).
 
-### Escopo escolhido
-Formato **completo mas enxuto**: cada anotação tem data, estado da pele (Boa / Neutra / Ruim), texto livre e tags rápidas opcionais. Sem foto (fotos já ficam na Timeline, evitamos duplicação).
-
-### Backend (Lovable Cloud)
-Nova tabela `skin_diary_entries`:
-- `user_id` (dono, obrigatório)
-- `entry_date` (data do registro, default hoje)
-- `mood` (enum: `good` | `neutral` | `bad`)
-- `note` (texto, até 2000 caracteres)
-- `tags` (array de texto, ex: "oleosidade", "acne", "vermelhidão")
-
-Regras de acesso:
-- Só o próprio usuário pode ver, criar, editar e apagar suas anotações.
-- Índice por `(user_id, entry_date desc)` para listagem rápida.
-
-### Frontend
-
-**1. `src/pages/CalendarPage.tsx`** — adicionar Tabs no topo:
-- Aba **"Agenda"** (conteúdo atual da página).
-- Aba **"Diário da Pele"** (nova).
-
-**2. Novo componente `src/components/SkinDiary.tsx`**:
-- Cabeçalho curto explicando o propósito ("Anote como sua pele está hoje…").
-- Botão "Nova anotação" que abre um `Dialog` com:
-  - Seletor de data (shadcn DatePicker, default hoje).
-  - Três botões grandes de humor da pele: 🙂 Boa · 😐 Neutra · 😕 Ruim (visual com cores do design system).
-  - Campo de tags rápidas (chips clicáveis pré-definidos + input livre).
-  - Textarea "O que você observou?" com contador.
-  - Botão salvar / cancelar; validação via zod (mood obrigatório, note ≤ 2000).
-- Lista cronológica (mais recente primeiro) agrupada por mês, cada item mostrando: data formatada em pt-BR, ícone/cor do humor, tags como badges e o texto. Ações de editar/excluir por item.
-- Estado vazio ilustrado com Sparkles + call-to-action.
-- Estado de carregamento com skeletons.
-
-**3. Card no Dashboard (opcional, leve)**:
-- Pequeno atalho "Como sua pele está hoje?" com os três emojis que abre direto o diálogo de nova anotação já com data = hoje. *(Confirmar se quer esse atalho — se não, removo.)*
+### O que muda
+- Gerar uma imagem de referência (mão segurando um frasco de sérum branco em fundo transparente, estilo minimalista/editorial) via ferramenta de imagem, salva em `src/assets/product-scan.png` (PNG transparente para se integrar ao fundo bordô do card).
+- No card atual:
+  - Trocar o ícone `ScanLine` decorativo grande do canto inferior direito pela nova imagem.
+  - Posicionar a imagem absolutamente à direita (`absolute right-0 bottom-0`), com altura próxima da altura do card (~200px), transbordando ligeiramente para fora à direita, mantendo o efeito "produto entrando na cena" da referência.
+  - Manter os cantos de mira (ScanLine) atrás do produto, com opacidade baixa, para reforçar o tema "escanear".
+  - Ajustar o `max-w-[75%]` do bloco de texto para `max-w-[62%]` ou `max-w-[58%]` para não sobrepor o produto.
+  - Adicionar um leve gradiente `from-primary via-primary/95 to-transparent` do lado esquerdo para garantir contraste do texto sobre a imagem em telas menores.
+- `alt` descritivo: "Frasco de sérum sendo analisado".
 
 ### Fora de escopo
-- Sem fotos no diário (fica na Timeline).
-- Sem análise por IA das anotações neste momento.
-- Sem visualização por admin/clínica.
-- Sem alterações em rotas, menu lateral ou BottomNav (acesso é pela aba do Calendário).
+- Sem mudanças em rotas, no botão "Escanear agora" ou em outras seções do Dashboard.
+- Sem edição em BottomNav, AppSidebar ou páginas de produtos.
 
 ### Detalhes técnicos
-- Migration cria a tabela, GRANTs para `authenticated` + `service_role`, RLS habilitado, políticas escopadas a `auth.uid() = user_id` para SELECT/INSERT/UPDATE/DELETE, trigger `updated_at`.
-- Validação com `zod` no cliente antes do insert/update.
-- Datas armazenadas como `date` (sem timezone) para representar o dia registrado pelo usuário.
+- Imagem importada como asset ES6 comum: `import productScan from "@/assets/product-scan.png"`.
+- Mobile-first: em telas <640px reduzir a altura do produto (`h-40 sm:h-48 md:h-56`) para não competir com o botão.
