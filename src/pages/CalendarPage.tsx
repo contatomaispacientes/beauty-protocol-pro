@@ -37,6 +37,8 @@ import {
   startOfWeek,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import SkinDiary from "@/components/SkinDiary";
 
 interface UserProduct {
   id: string;
@@ -258,6 +260,13 @@ const CalendarPage = () => {
           </p>
         </div>
 
+        <Tabs defaultValue="agenda" className="space-y-6">
+          <TabsList className="grid grid-cols-2 w-full sm:w-auto">
+            <TabsTrigger value="agenda">Agenda</TabsTrigger>
+            <TabsTrigger value="diary">Diário da pele</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="agenda" className="space-y-6 mt-0">
         {/* Week strip */}
         <div className="flex items-center gap-2">
           <Button
@@ -429,6 +438,12 @@ const CalendarPage = () => {
           products={products}
           onSaved={loadAll}
         />
+          </TabsContent>
+
+          <TabsContent value="diary" className="mt-0">
+            <SkinDiary />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );
