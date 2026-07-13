@@ -357,6 +357,39 @@ export type Database = {
         }
         Relationships: []
       }
+      skin_diary_entries: {
+        Row: {
+          created_at: string
+          entry_date: string
+          id: string
+          mood: Database["public"]["Enums"]["skin_mood"]
+          note: string
+          tags: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entry_date?: string
+          id?: string
+          mood: Database["public"]["Enums"]["skin_mood"]
+          note?: string
+          tags?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entry_date?: string
+          id?: string
+          mood?: Database["public"]["Enums"]["skin_mood"]
+          note?: string
+          tags?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       skincare_calendar_events: {
         Row: {
           completed_at: string | null
@@ -753,6 +786,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "super_admin"
+      skin_mood: "good" | "neutral" | "bad"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -881,6 +915,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user", "super_admin"],
+      skin_mood: ["good", "neutral", "bad"],
     },
   },
 } as const
