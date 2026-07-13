@@ -116,10 +116,19 @@ const Dashboard = () => {
             className="relative block bg-primary text-primary-foreground rounded-[28px] p-7 overflow-hidden shadow-[0_25px_70px_-30px_hsl(var(--primary)/0.7)] group"
           >
             <div className="absolute -top-20 -right-20 w-56 h-56 bg-accent/40 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 right-0 w-40 h-40 opacity-20">
+            <div className="absolute bottom-4 right-4 w-32 h-32 opacity-15 pointer-events-none">
               <ScanLine className="w-full h-full" strokeWidth={0.6} />
             </div>
-            <div className="relative z-10 max-w-[75%]">
+            <img
+              src={productScan}
+              alt="Frasco de sérum sendo analisado"
+              loading="lazy"
+              width={1024}
+              height={1024}
+              className="absolute -right-6 -bottom-4 h-44 sm:h-52 md:h-60 w-auto object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.35)] pointer-events-none select-none"
+            />
+            <div className="absolute inset-y-0 left-0 w-2/3 bg-gradient-to-r from-primary via-primary/90 to-transparent pointer-events-none" />
+            <div className="relative z-10 max-w-[62%]">
               <span className="inline-block text-[9px] font-bold uppercase tracking-[0.28em] bg-primary-foreground/15 px-2.5 py-1 rounded-full mb-4">
                 Função principal
               </span>
