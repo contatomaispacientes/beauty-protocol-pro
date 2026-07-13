@@ -21,6 +21,7 @@ import InstallAppButton from "@/components/InstallAppButton";
 import { useEffect, useState } from "react";
 import { useRoutineScore } from "@/hooks/useRoutineScore";
 import { supabase } from "@/integrations/supabase/client";
+import productScan from "@/assets/product-scan.png";
 
 const secondaryActions = [
   { title: "Meu Calendário", subtitle: "Check-in diário", icon: CalendarDays, url: "/calendar" },
