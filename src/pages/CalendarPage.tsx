@@ -37,6 +37,8 @@ import {
   startOfWeek,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import SkinDiary from "@/components/SkinDiary";
 
 interface UserProduct {
   id: string;
