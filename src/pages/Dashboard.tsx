@@ -62,13 +62,14 @@ const Dashboard = () => {
   const firstName = String(name).split(" ")[0];
   const [period, setPeriod] = useState<Period>("AM");
   const routineScore = useRoutineScore(7);
-  const [posts, setPosts] = useState<Array<{ id: string; slug: string; title: string; cover_image: string | null; author: string | null; created_at: string }>>([]);
+  const [posts, setPosts] = useState<Array<{ id: string; slug: string; title: string; excerpt: string | null; content: string | null; cover_image: string | null; author: string | null; created_at: string }>>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<typeof posts[number] | null>(null);
 
   useEffect(() => {
     supabase
       .from("blog_posts")
-      .select("id,slug,title,cover_image,author,created_at")
+      .select("id,slug,title,excerpt,content,cover_image,author,created_at")
       .eq("published", true)
       .order("created_at", { ascending: false })
       .limit(6)
