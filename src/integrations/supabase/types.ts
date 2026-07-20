@@ -299,6 +299,44 @@ export type Database = {
         }
         Relationships: []
       }
+      product_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          product_id: string
+          rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          product_id: string
+          rating: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          product_id?: string
+          rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_search_history: {
         Row: {
           analysis: Json
@@ -326,6 +364,45 @@ export type Database = {
           image_url?: string | null
           product_name?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          avg_rating: number
+          brand: string | null
+          category: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          name: string
+          normalized_key: string
+          reviews_count: number
+          updated_at: string
+        }
+        Insert: {
+          avg_rating?: number
+          brand?: string | null
+          category?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          normalized_key: string
+          reviews_count?: number
+          updated_at?: string
+        }
+        Update: {
+          avg_rating?: number
+          brand?: string | null
+          category?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          normalized_key?: string
+          reviews_count?: number
+          updated_at?: string
         }
         Relationships: []
       }
