@@ -1,21 +1,31 @@
-## Foto de produto no card "Analisar um produto"
+## 1. Artigos "Dicas Luz Skin" dentro do dashboard
 
-**Arquivo:** `src/pages/Dashboard.tsx` (card do hero, linhas ~113-138).
+Hoje o card "Dicas Luz Skin" leva o usuário para `/blog` (sai do dashboard). Vou trocar por uma seção embutida no próprio Dashboard:
 
-### O que muda
-- Gerar uma imagem de referência (mão segurando um frasco de sérum branco em fundo transparente, estilo minimalista/editorial) via ferramenta de imagem, salva em `src/assets/product-scan.png` (PNG transparente para se integrar ao fundo bordô do card).
-- No card atual:
-  - Trocar o ícone `ScanLine` decorativo grande do canto inferior direito pela nova imagem.
-  - Posicionar a imagem absolutamente à direita (`absolute right-0 bottom-0`), com altura próxima da altura do card (~200px), transbordando ligeiramente para fora à direita, mantendo o efeito "produto entrando na cena" da referência.
-  - Manter os cantos de mira (ScanLine) atrás do produto, com opacidade baixa, para reforçar o tema "escanear".
-  - Ajustar o `max-w-[75%]` do bloco de texto para `max-w-[62%]` ou `max-w-[58%]` para não sobrepor o produto.
-  - Adicionar um leve gradiente `from-primary via-primary/95 to-transparent` do lado esquerdo para garantir contraste do texto sobre a imagem em telas menores.
-- `alt` descritivo: "Frasco de sérum sendo analisado".
+- Buscar os últimos 6 posts publicados de `blog_posts` direto no `Dashboard.tsx`.
+- Renderizar um carrossel horizontal (scroll-snap, mesmo estilo já usado na seção atual) com título, cover, excerpt e data — sem sair da página.
+- Cada card abre o artigo dentro de um `Dialog`/`Sheet` (modal) exibindo o conteúdo completo do post, mantendo o usuário no dashboard.
+- Remover a navegação para `/blog` a partir do dashboard. A rota `/blog` continua existindo (institucional/SEO), mas deixa de ser o destino do card.
 
-### Fora de escopo
-- Sem mudanças em rotas, no botão "Escanear agora" ou em outras seções do Dashboard.
-- Sem edição em BottomNav, AppSidebar ou páginas de produtos.
+## 2. Histórico persistente do Chat Luz
 
-### Detalhes técnicos
-- Imagem importada como asset ES6 comum: `import productScan from "@/assets/product-scan.png"`.
-- Mobile-first: em telas <640px reduzir a altura do produto (`h-40 sm:h-48 md:h-56`) para não competir com o botão.
+Hoje `Chat.tsx` guarda mensagens apenas em `useState` — ao sair da página, tudo se perde. Vou persistir por usuário no backend.
+
+### Backend (migration)
+Criar duas tabelas em `public`:
+
+- `chat_conversations` — `id uuid pk`, `user_id uuid` (FK `auth.users`), `title text`, `created_at`, `updated_at`.
+- `chat_messages` — `id uuid pk`, `conversation_id uuid` (FK cascade), `user_id uuid`, `role text ('user'|'assistant')`, `content text`, `created_at`.
+
+Com `GRANT` para `authenticated`/`service_role` e RLS: usuário só lê/insere/atualiza/deleta linhas onde `user_id = auth.uid()`. Trigger `update_updated_at_column` em `chat_conversations`.
+
+### Frontend (`src/pages/Chat.tsx`)
+- Sidebar (drawer no mobile) listando conversas do usuário, ordenadas por `updated_at`, com botão "Nova conversa" e ícone de lixeira por item (delete permanente com confirmação).
+- Ao abrir a página: carregar lista; selecionar a mais recente ou criar uma nova automaticamente se não houver nenhuma.
+- Ao selecionar uma conversa: carregar `chat_messages` daquela conversa.
+- Ao enviar: se não houver conversa ativa, criar uma (título = primeiras ~40 chars da mensagem); inserir a mensagem do usuário; após o stream completar, inserir a mensagem final do assistente; atualizar `updated_at` da conversa.
+- Botão "Limpar chat" vira "Excluir esta conversa" (remove do banco + volta para nova).
+- Manter o streaming SSE atual sem mudanças.
+
+### Nota técnica
+Não altero a edge function `skincare-chat` (ela permanece stateless, recebendo o array de mensagens do cliente — o cliente já envia todo o histórico da conversa ativa).

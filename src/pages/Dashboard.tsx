@@ -22,6 +22,8 @@ import { useEffect, useState } from "react";
 import { useRoutineScore } from "@/hooks/useRoutineScore";
 import { supabase } from "@/integrations/supabase/client";
 import productScan from "@/assets/product-scan.png";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ReactMarkdown from "react-markdown";
 
 const secondaryActions = [
   { title: "Meu Calendário", subtitle: "Check-in diário", icon: CalendarDays, url: "/calendar" },
@@ -60,13 +62,14 @@ const Dashboard = () => {
   const firstName = String(name).split(" ")[0];
   const [period, setPeriod] = useState<Period>("AM");
   const routineScore = useRoutineScore(7);
-  const [posts, setPosts] = useState<Array<{ id: string; slug: string; title: string; cover_image: string | null; author: string | null; created_at: string }>>([]);
+  const [posts, setPosts] = useState<Array<{ id: string; slug: string; title: string; excerpt: string | null; content: string | null; cover_image: string | null; author: string | null; created_at: string }>>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<typeof posts[number] | null>(null);
 
   useEffect(() => {
     supabase
       .from("blog_posts")
-      .select("id,slug,title,cover_image,author,created_at")
+      .select("id,slug,title,excerpt,content,cover_image,author,created_at")
       .eq("published", true)
       .order("created_at", { ascending: false })
       .limit(6)
@@ -363,12 +366,6 @@ const Dashboard = () => {
           >
             <div className="flex items-baseline justify-between mb-4">
               <h2 className="font-display italic text-3xl text-foreground">Artigos do Dica Luz</h2>
-              <Link
-                to="/blog"
-                className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest hover:text-primary"
-              >
-                Ver todos →
-              </Link>
             </div>
 
             <div className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-4 px-4 pb-2">
@@ -380,10 +377,11 @@ const Dashboard = () => {
                     />
                   ))
                 : posts.map((p) => (
-                    <Link
+                    <button
                       key={p.id}
-                      to={`/blog/${p.slug}`}
-                      className="group relative shrink-0 w-[280px] h-[340px] rounded-3xl overflow-hidden shadow-[0_20px_50px_-20px_hsl(var(--foreground)/0.25)] snap-start"
+                      type="button"
+                      onClick={() => setSelectedPost(p)}
+                      className="group relative shrink-0 w-[280px] h-[340px] rounded-3xl overflow-hidden shadow-[0_20px_50px_-20px_hsl(var(--foreground)/0.25)] snap-start text-left"
                     >
                       {p.cover_image ? (
                         <img
@@ -410,11 +408,43 @@ const Dashboard = () => {
                           <time>{new Date(p.created_at).toLocaleDateString("pt-BR")}</time>
                         </div>
                       </div>
-                    </Link>
+                    </button>
                   ))}
             </div>
           </motion.section>
         )}
+
+        <Dialog open={!!selectedPost} onOpenChange={(o) => !o && setSelectedPost(null)}>
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+            {selectedPost && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="font-display italic text-3xl text-left leading-tight">
+                    {selectedPost.title}
+                  </DialogTitle>
+                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground pt-1">
+                    {selectedPost.author && <span>{selectedPost.author}</span>}
+                    {selectedPost.author && <span>·</span>}
+                    <time>{new Date(selectedPost.created_at).toLocaleDateString("pt-BR")}</time>
+                  </div>
+                </DialogHeader>
+                {selectedPost.cover_image && (
+                  <img
+                    src={selectedPost.cover_image}
+                    alt={selectedPost.title}
+                    className="w-full h-56 object-cover rounded-2xl"
+                  />
+                )}
+                <div className="prose prose-sm max-w-none dark:prose-invert">
+                  <ReactMarkdown>
+                    {selectedPost.content || selectedPost.excerpt || ""}
+                  </ReactMarkdown>
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+
 
 
         <p className="text-[10px] text-muted-foreground text-center px-6 pb-4">
