@@ -64,9 +64,11 @@ const emptyForm = {
 const Cabinet = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [products, setProducts] = useState<UserProduct[]>([]);
+  const [ratings, setRatings] = useState<Record<string, { avg: number; count: number }>>({});
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -88,8 +90,39 @@ const Cabinet = () => {
       .select("*")
       .eq("patient_id", user!.id)
       .order("created_at", { ascending: false });
-    setProducts((data as UserProduct[]) || []);
+    const list = (data as UserProduct[]) || [];
+    setProducts(list);
     setLoading(false);
+
+    const ids = list.map((p) => p.product_id).filter(Boolean) as string[];
+    if (ids.length) {
+      const { data: rows } = await supabase
+        .from("products")
+        .select("id,avg_rating,reviews_count")
+        .in("id", ids);
+      const map: Record<string, { avg: number; count: number }> = {};
+      (rows || []).forEach((r: any) => {
+        map[r.id] = { avg: Number(r.avg_rating) || 0, count: r.reviews_count || 0 };
+      });
+      setRatings(map);
+    }
+  };
+
+  const openDetail = async (p: UserProduct) => {
+    let pid = p.product_id;
+    if (!pid) {
+      pid = await getOrCreateProductId({
+        name: p.name,
+        brand: p.brand,
+        category: p.category,
+        image_url: p.image_url,
+      });
+      if (pid) {
+        await supabase.from("user_products").update({ product_id: pid }).eq("id", p.id);
+      }
+    }
+    if (pid) navigate(`/produtos/${pid}`);
+    else toast({ title: "Não foi possível abrir avaliações", variant: "destructive" });
   };
 
   const openNew = () => {
