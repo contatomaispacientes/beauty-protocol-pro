@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,11 +17,12 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Loader2, Camera, Upload, Sparkles, Package, Archive, Trash2, Pencil, Sun, Moon, Wand2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Plus, Loader2, Camera, Upload, Sparkles, Package, Archive, Trash2, Pencil, Sun, Moon, Wand2, AlertTriangle, CheckCircle2, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import CameraCapture from "@/components/CameraCapture";
+import { getOrCreateProductId } from "@/lib/product-catalog";
 
 const CATEGORIES: { value: string; label: string }[] = [
   { value: "cleanser", label: "Limpeza" },
@@ -46,6 +48,7 @@ interface UserProduct {
   notes: string | null;
   image_url: string | null;
   is_archived: boolean;
+  product_id: string | null;
 }
 
 const emptyForm = {
