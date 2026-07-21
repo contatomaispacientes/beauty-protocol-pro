@@ -8,6 +8,7 @@ import { Search, Loader2, FlaskConical, Baby, ShieldCheck, AlertTriangle, Drople
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import ProductReviews from "@/components/ProductReviews";
 
 interface ProductSafety {
   safe_for_pregnant: string;
