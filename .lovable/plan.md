@@ -1,59 +1,47 @@
 
-Criar uma página de detalhes do produto no estilo Vivino, acessível tanto pela Análise de Produto quanto pelo Armário, com resumo do produto + área rica de avaliações da comunidade (estrelas, distribuição, comentários) e formulário próprio.
+## Objetivo
 
-## Roteamento
+Na Dashboard do usuário (`src/pages/Dashboard.tsx`), adicionar 3 novas seções logo **acima** da "Dica da Luz", cada uma com filtro de período (Hoje / 7d / 30d / 90d):
 
-- Nova rota `/produtos/:productId` → `src/pages/ProductDetail.tsx`.
-- A partir de `Products.tsx`: após analisar, botão "Ver avaliações" leva à página. Itens do histórico também abrem por lá.
-- A partir de `Cabinet.tsx`: cada card do armário fica clicável (ou botão "Avaliar") e leva à página. Se o item do armário ainda não tem `product_id` na tabela pública `products`, fazemos um upsert por `normalized_key` (mesmo padrão de `Products.tsx`) na hora de abrir.
+1. **Mais pesquisados** — produtos com mais buscas no período.
+2. **Melhor avaliados** — produtos com mais estrelas no período (média das reviews criadas no período, com mínimo de avaliações para entrar no ranking).
+3. **Top da comunidade** — usuários que mais pesquisaram + avaliaram no período.
 
-## Modelo de dados
+## UX
 
-Migration leve para conectar o armário ao catálogo:
+- Cada seção: título + tabs de período (`Hoje | 7d | 30d | 90d`, default `7d`) + carrossel horizontal com snap (mesmo padrão do carrossel "Dica da Luz").
+- Cards de produto: imagem, nome, marca, estrelas + média, contagem de avaliações. Clique → `/produtos/:productId`.
+- Cards de usuário: avatar/inicial, `display_name`, badge com nº de pesquisas e nº de avaliações. Sem link (perfil público está fora de escopo).
+- Loading: skeletons. Vazio: mensagem discreta ("Sem dados neste período ainda").
+- Ordem final da Dashboard: Hero → Score/Rotina → **Mais pesquisados** → **Melhor avaliados** → **Top da comunidade** → Dica da Luz → resto.
 
-- `ALTER TABLE public.user_products ADD COLUMN product_id uuid REFERENCES public.products(id) ON DELETE SET NULL;`
-- Índice em `user_products.product_id`.
-- Sem novos GRANTs (a tabela já tem RLS/GRANT). Nenhuma outra alteração de schema — `products` e `product_reviews` já existem com trigger de agregação.
+## Dados
 
-## UI da página (inspirada nas telas Vivino enviadas)
+Consultas por período (`since = now - N dias`, exceto "Hoje" = início do dia local):
 
-Header do produto (card cheio):
-- Imagem do produto grande à esquerda; à direita, bloco branco com nota média grande (ex.: `4,3`), fileira de estrelas, "133 avaliações".
-- Abaixo: marca, nome do produto, categoria (badge).
-- Se o usuário tem perfil preenchido: badge de "Compatível com seu perfil" (reaproveita `compatibility_with_user` quando disponível na análise; para itens vindos só do armário, mostramos apenas se o dado existir).
+- **Mais pesquisados**: `product_search_history` agrupado por `product_id` (quando existir) no período. Depois `products.select('id,name,brand,image_url,avg_rating,reviews_count').in('id', topIds)`. Ordena pelo count desshown do agrupamento. Limite 12.
+- **Melhor avaliados**: `product_reviews` no período, agregado por `product_id` no cliente (média + count). Filtro mínimo 3 reviews no período para evitar produto com 1 review 5★ liderando. Ordena por média desc, empate por count desc. Join com `products` como acima. Limite 12.
+- **Top da comunidade**: agregação no cliente combinando `product_search_history` (count por `user_id`) e `product_reviews` (count por `user_id`) no período. Score = `searches + reviews*2`. Depois `profiles.select('user_id,display_name,avatar_url').in('user_id', topIds)`. Limite 10.
 
-Ações rápidas (linha de botões redondos, como no Vivino):
-- Avaliar (rola até o form)
-- Adicionar ao armário / Remover do armário (toggle conforme estado)
-- Compartilhar (Web Share API, fallback: copiar link)
+Todas as leituras usam o cliente Supabase; RLS atual das tabelas permite leitura autenticada (verificado durante a implementação — se alguma tabela restringir por `user_id`, a query volta com dados só do próprio usuário e o ranking fica inviável; nesse caso trato via ajuste de policy na fase de build). Para não bloquear o plano, isso será verificado como primeiro passo do build.
 
-Bloco "Sobre o produto":
-- Lista de ativos principais + tags de segurança (gestantes, parabenos, pele sensível, etc.) — reutiliza os dados salvos em `product_search_history.analysis` quando existirem para o `product_id`, senão mostra apenas o que temos.
+## Implementação técnica
 
-Bloco "Avaliações da comunidade" (evolução do componente atual):
-- Nota média grande + estrelas + total.
-- Barra de distribuição por nota (5→1) com contagens, calculada no cliente a partir das reviews.
-- Formulário "Sua avaliação" (seletor de estrelas grande + textarea 500 chars + Publicar/Atualizar/Excluir).
-- Lista de reviews com avatar/inicial, nome, data relativa ("Há 2 meses"), estrelas e comentário.
-- Estado vazio: "Seja a primeira pessoa a avaliar".
+Novos arquivos:
 
-## Componentização
+- `src/components/dashboard/PeriodTabs.tsx` — tabs controladas (Hoje/7d/30d/90d), retorna `since: Date`.
+- `src/components/dashboard/TopSearchedProducts.tsx`
+- `src/components/dashboard/TopRatedProducts.tsx`
+- `src/components/dashboard/TopCommunityUsers.tsx`
+- `src/hooks/useCommunityRankings.ts` — 3 hooks (`useTopSearched`, `useTopRated`, `useTopUsers`) que aceitam `since` e devolvem `{ data, loading }`. Cache simples por período no `useState` do componente pai; sem React Query para manter o padrão atual do projeto.
 
-- `src/pages/ProductDetail.tsx` — nova página, usa `DashboardLayout`.
-- `src/components/ProductReviews.tsx` — extender para expor a distribuição de notas (barras 5→1) e datas relativas em pt-BR (util já em uso). O card mantém o formulário e a lista.
-- Novo utilitário `src/lib/product-catalog.ts` com `getOrCreateProductId({ name, brand, category, image_url })` para reusar em Products, Cabinet e ProductDetail.
+Alterações:
 
-## Integrações
-
-- `Products.tsx`: substituir a renderização inline de `<ProductReviews />` por um botão "Ver avaliações da comunidade" que navega para `/produtos/:productId` (mantém o resumo da análise na página atual).
-- `Cabinet.tsx`: card do produto vira link; ao clicar, garante `product_id` (upsert) e navega. Adicionar ícone/estrela discreto no card mostrando `avg_rating` quando `product_id` já estiver preenchido (busca em lote via `in('id', ids)`).
-
-## Validação e segurança
-
-- Mantém `zod` para review (1–5 estrelas, comentário até 500 chars).
-- Todas as leituras/gravações passam por RLS já existente (`auth.uid() = user_id` em `product_reviews`).
-- Sem uso de `dangerouslySetInnerHTML`. Sanitização por limite de caracteres.
+- `src/pages/Dashboard.tsx` — importar e renderizar as 3 seções acima do bloco "Dica da Luz". Sem mexer em nada mais.
 
 ## Fora do escopo
 
-- Curtidas/respostas em reviews, denúncias, upload de foto na review, filtros por nota, paginação infinita. Podem entrar em uma próxima iteração.
+- Página pública de perfil de usuário.
+- Filtro por categoria de produto.
+- Paginação (limite fixo de 10-12 por seção).
+- Cache/materialized view no banco (agregação feita no cliente por enquanto — se ficar lento com escala, migramos para RPC).
