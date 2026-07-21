@@ -199,10 +199,14 @@ const Products = () => {
     toast({ title: "Adicionado ao armário ✨" });
   };
 
-  const openFromHistory = (h: HistoryItem) => {
-    setResult({ ...h.analysis, image_url: h.image_url || h.analysis.image_url });
+  const openFromHistory = async (h: HistoryItem) => {
+    const merged = { ...h.analysis, image_url: h.image_url || h.analysis.image_url };
+    setResult(merged);
     setQuery(h.product_name);
     setAddedToCabinet(false);
+    setProductId(null);
+    const pid = await upsertProduct(merged);
+    setProductId(pid);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
