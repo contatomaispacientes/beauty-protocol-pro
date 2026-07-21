@@ -14,6 +14,7 @@ import Questionnaire from "./pages/Questionnaire";
 
 import Routine from "./pages/Routine";
 import Products from "./pages/Products";
+import ProductDetail from "./pages/ProductDetail";
 import Chat from "./pages/Chat";
 import Timeline from "./pages/Timeline";
 import Cabinet from "./pages/Cabinet";
@@ -75,6 +76,7 @@ const App = () => (
           
           <Route path="/routine" element={<ProtectedRoute><Routine /></ProtectedRoute>} />
           <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+          <Route path="/produtos/:productId" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
           <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
           <Route path="/cabinet" element={<ProtectedRoute><Cabinet /></ProtectedRoute>} />
