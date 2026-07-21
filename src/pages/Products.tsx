@@ -353,6 +353,8 @@ const Products = () => {
                 <p className="text-sm text-muted-foreground mt-1">{result.verdict}</p>
               </CardContent>
             </Card>
+
+            {productId && <ProductReviews productId={productId} productName={result.product_name} />}
           </div>
         )}
 
