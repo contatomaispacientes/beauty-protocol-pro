@@ -11,6 +11,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Questionnaire from "./pages/Questionnaire";
+import OnboardingFlow from "./pages/onboarding/OnboardingFlow";
 
 import Routine from "./pages/Routine";
 import Products from "./pages/Products";
@@ -61,7 +62,8 @@ const App = () => (
           {/* Public */}
           <Route path="/" element={<PWAGate><Index /></PWAGate>} />
           <Route path="/login" element={<PWAGate redirectAuthedToDashboard><Login /></PWAGate>} />
-          <Route path="/signup" element={<Signup />} />
+          <Route path="/signup" element={<OnboardingFlow />} />
+          <Route path="/onboarding" element={<OnboardingFlow />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/about" element={<PWAGate><About /></PWAGate>} />
