@@ -512,6 +512,13 @@ const Cabinet = () => {
                         "AM + PM"
                       )}
                     </Badge>
+                    {p.product_id && ratings[p.product_id]?.count > 0 && (
+                      <Badge variant="outline" className="text-[10px] gap-1">
+                        <Star className="w-3 h-3 fill-primary text-primary" strokeWidth={1.5} />
+                        {ratings[p.product_id].avg.toFixed(1).replace(".", ",")}
+                        <span className="text-muted-foreground">({ratings[p.product_id].count})</span>
+                      </Badge>
+                    )}
                   </div>
                   {p.key_ingredients && (
                     <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
@@ -523,6 +530,9 @@ const Cabinet = () => {
                   )}
                 </div>
                 <div className="flex flex-col gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => openDetail(p)} title="Ver avaliações">
+                    <Star className="w-4 h-4 text-primary" />
+                  </Button>
                   <Button size="icon" variant="ghost" onClick={() => openEdit(p)}>
                     <Pencil className="w-4 h-4" />
                   </Button>
