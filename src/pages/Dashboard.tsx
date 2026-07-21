@@ -24,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import productScan from "@/assets/product-scan.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ReactMarkdown from "react-markdown";
+import CommunityRankings from "@/components/dashboard/CommunityRankings";
 
 const secondaryActions = [
   { title: "Meu Calendário", subtitle: "Check-in diário", icon: CalendarDays, url: "/calendar" },
@@ -335,6 +336,9 @@ const Dashboard = () => {
             </motion.div>
           ))}
         </motion.div>
+
+        {/* Community rankings */}
+        <CommunityRankings />
 
         {/* Doctor's tip */}
         <motion.div
