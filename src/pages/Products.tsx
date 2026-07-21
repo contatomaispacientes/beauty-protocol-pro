@@ -103,11 +103,34 @@ const Products = () => {
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
+  const upsertProduct = async (r: ProductResult): Promise<string | null> => {
+    if (r.product_not_found || !r.product_name) return null;
+    const key = `${(r.brand || "").trim().toLowerCase()}|${r.product_name.trim().toLowerCase()}`;
+    if (!key || key === "|") return null;
+    const { data, error } = await supabase
+      .from("products")
+      .upsert(
+        {
+          normalized_key: key,
+          name: r.product_name,
+          brand: r.brand || null,
+          category: r.category || null,
+          image_url: r.image_url || null,
+        },
+        { onConflict: "normalized_key" },
+      )
+      .select("id")
+      .single();
+    if (error) return null;
+    return data?.id ?? null;
+  };
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim() && !imageBase64) return;
     setLoading(true);
     setResult(null);
+    setProductId(null);
     setAddedToCabinet(false);
 
     try {
@@ -135,6 +158,8 @@ const Products = () => {
       }
 
       setResult(resultData);
+      const pid = await upsertProduct(resultData);
+      setProductId(pid);
 
       // Save to history
       if (user) {
