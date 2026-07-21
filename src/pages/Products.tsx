@@ -357,14 +357,17 @@ const Products = () => {
             </Card>
 
             {productId && (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => navigate(`/produtos/${productId}`)}
-              >
-                <Star className="w-4 h-4 mr-2" />
-                Ver avaliações da comunidade
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate(`/produtos/${productId}`)}
+                >
+                  <Star className="w-4 h-4 mr-2" />
+                  Abrir página do produto
+                </Button>
+                <ProductReviews productId={productId} />
+              </>
             )}
           </div>
         )}
