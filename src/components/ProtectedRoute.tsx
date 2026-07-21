@@ -54,14 +54,15 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     if (!hasRole) return <Navigate to="/dashboard" replace />;
   }
 
-  // Force questionnaire on first access (patients only, not admin/super_admin)
+  // Force onboarding on first access (patients only, not admin/super_admin)
   if (
     needsQuestionnaire &&
     !isAdmin &&
     !isSuperAdmin &&
+    location.pathname !== "/onboarding" &&
     location.pathname !== "/questionnaire"
   ) {
-    return <Navigate to="/questionnaire" replace />;
+    return <Navigate to="/onboarding?step=3" replace />;
   }
 
   return <>{children}</>;
