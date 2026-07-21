@@ -853,6 +853,7 @@ export type Database = {
           name: string
           notes: string | null
           patient_id: string
+          product_id: string | null
           updated_at: string
         }
         Insert: {
@@ -867,6 +868,7 @@ export type Database = {
           name: string
           notes?: string | null
           patient_id: string
+          product_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -881,9 +883,18 @@ export type Database = {
           name?: string
           notes?: string | null
           patient_id?: string
+          product_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
