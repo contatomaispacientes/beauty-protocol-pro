@@ -1,59 +1,52 @@
-
 ## Objetivo
 
-Transformar o cadastro em uma jornada guiada de 12 telas idêntica ao mockup enviado, unificando `Signup` + `Questionnaire` num único wizard mobile-first com o visual LUZ (Cormorant Garamond, mauve/wine sobre creme, progress bar fina, botões pill grandes, cards de opção com estado selecionado wine).
+Transformar o painel do Super Admin em um verdadeiro dashboard de analytics da plataforma, mostrando distribuições dos usuários (tipo de pele, sensibilidade, objetivos, faixa etária, gênero, região), crescimento de cadastros, produtos mais pesquisados e mais avaliados, e ranking dos usuários mais ativos — tudo com filtro de período.
 
-## Fluxo (12 passos)
+## O que será construído
 
-1. **Boas-vindas** — logo LUZ SKIN, headline serif ("Decisões mais inteligentes para uma pele mais saudável"), subheadline, botão "Começar", link "Já tem conta? Entrar".
-2. **Criar conta** — botões Google / Apple / E-mail (Apple oculto quando não configurado). Ao escolher e-mail, expande campos email + senha inline.
-3. **Sobre você** — nome, data de nascimento (Shadcn Datepicker), gênero (pills Feminino / Masculino / Prefiro não dizer).
-4. **Sua pele** — tipo (Oleosa/Seca/Mista/Normal com ícone de gota), sensibilidade (Baixa/Moderada/Alta), preocupações (chips multi-select).
-5. **Seus objetivos** — checklist múltipla (Controlar acne, Clarear manchas, Reduzir oleosidade, Melhorar textura e poros, Prevenir envelhecimento, Hidratar e fortalecer) + select de prazo (Curto / Médio / Longo prazo).
-6. **Sua rotina atual** — checklist de produtos que já usa (Limpeza, Tônico, Sérum, Hidratante, Protetor solar, Tratamento, Óleo facial, Nenhum).
-7. **Preferências** — faixa de investimento (Econômico / Intermediário / Premium) e frequência de uso (Todos os dias / Algumas vezes na semana / Quando for comprar).
-8. **Permissões** — Câmera / Notificações / Localização (opcional). Toggles visuais; ao continuar, dispara `Notification.requestPermission()` (as demais são solicitadas em contexto real).
-9-11. **Tour rápido** — 3 slides com dots: (9) Escaneie produtos + foto `product-scan`, (10) Compatibilidade 96% (semicírculo animado), (11) Progresso +28% (mini gráfico Recharts).
-12. **Pronto!** — "Tudo pronto, {nome}!", círculo com Skin Score inicial (calculado a partir das respostas: base 60 + bônus por rotina/protetor/hidratação, teto 95), lista de features desbloqueadas, CTA "Ir para meu dashboard".
+Reformular `SuperAdminDashboard.tsx` (rota `/super-admin`) e enriquecer `SuperAdminStats.tsx` (`/super-admin/stats`) para oferecer:
 
-## Arquitetura técnica
+**KPIs no topo**
+- Total de usuários
+- Novos usuários no período
+- Total de produtos analisados
+- Total de avaliações
+- Total de mensagens no Chat Luz
+- Usuários que completaram o onboarding (%)
 
-Novo layout de onboarding, isolado do `DashboardLayout`:
+**Filtro global de período**: Hoje / 7d / 30d / 90d / Todos (aplicado às seções temporais).
 
-- `src/pages/onboarding/OnboardingFlow.tsx` — rota `/onboarding`. Máquina de passos controlada (`currentStep`, `setStep`), estado central `OnboardingData`, persiste rascunho em `localStorage` (`luz.onboarding.draft`) para não perder progresso.
-- `src/components/onboarding/OnboardingShell.tsx` — moldura mobile-first (max-w-sm, safe-area, header com progress bar fina e botão voltar, footer sticky com CTA "Continuar/Próximo").
-- `src/components/onboarding/OptionPill.tsx`, `OptionCard.tsx`, `Checklist.tsx` — primitivos visuais reutilizados pelas telas.
-- `src/pages/onboarding/steps/*.tsx` — um arquivo por tela (12 componentes stateless que recebem `data`, `update`, `next`, `back`).
+**Gráficos de perfil dos usuários** (a partir de `profiles.questionnaire_answers` + colunas `age`, `gender`, `region`)
+- Pizza: distribuição por tipo de pele (seca, oleosa, mista, normal, sensível)
+- Barras: nível de sensibilidade
+- Barras horizontais: principais objetivos de skincare
+- Barras: faixa etária
+- Pizza: gênero
+- Barras horizontais: top regiões
 
-## Integrações
+**Atividade da plataforma**
+- Linha: novos cadastros por dia (dentro do período)
+- Linha/área: pesquisas de produto por dia
+- Barras: avaliações publicadas por dia
 
-- **Passos 1-2** rodam sem sessão. No passo 2, ao concluir e-mail/OAuth, chama `supabase.auth.signUp` (ou `signInWithOAuth`) e continua. Google usa redirect com `redirectTo: ${origin}/onboarding?step=3`; ao voltar autenticado, o flow retoma do passo 3 usando o rascunho salvo.
-- **Passos 3-7** só editam estado local + rascunho.
-- **Passo 8** dispara permissões suportadas no browser.
-- **Passo 12** grava tudo em `profiles`:
-  - `display_name`, `phone` (se houver), `age` (derivada da data), `gender`, `region` reaproveitados quando aplicável.
-  - `questionnaire_completed = true`, `questionnaire_answers` = objeto completo com `skin_type`, `sensitivity`, `concerns`, `goals`, `timeframe`, `current_routine`, `allergies` (mantém compat com telas atuais que já leem essa chave).
-  - Novo campo derivado no cliente: `initial_skin_score` guardado dentro de `questionnaire_answers` para mostrar no Dashboard.
+**Rankings (respeitando o período)**
+- Top 10 produtos mais pesquisados (usa `get_top_searched_products`)
+- Top 10 produtos melhor avaliados (usa `get_top_rated_products`)
+- Top 10 usuários mais ativos (usa `get_top_community_users`) com nome, nº de pesquisas, nº de avaliações e score
 
-## Alterações em rotas e telas existentes
+Cada card de produto no ranking abre `/produtos/:id`.
 
-- `src/App.tsx`: adicionar rota `/onboarding`; redirecionar `/signup` → `/onboarding` (mantém backlinks antigos).
-- `src/components/ProtectedRoute.tsx`: quando o usuário está logado e `questionnaire_completed=false`, redireciona para `/onboarding?step=3` (retomada), não mais para `/questionnaire`.
-- `src/pages/Questionnaire.tsx`: mantém como página acessível pelo dashboard para editar respostas (mesmo modelo antigo, sem alteração visual pesada nesta iteração).
-- `src/pages/Login.tsx`: sem alteração de layout; muda apenas o link "Criar conta" para `/onboarding`.
-- Remoção do seletor "Paciente / Clínica" (feature já foi descontinuada em rodadas anteriores) — todo cadastro é consumer.
+## Detalhes técnicos
 
-## Design tokens
-
-Reaproveita 100% do tema atual (mauve `#7a3d4e` primário, background creme `#faf5f2`, Cormorant Garamond display, Karla body). Adiciona apenas:
-
-- `.step-progress` — barra 3px, radius full, track `bg-muted`, fill `bg-primary`.
-- `.option-pill` — variantes `default` (border muted, bg card) e `selected` (bg primary, text primary-foreground).
-- Nenhuma cor hardcoded; tudo via tokens em `src/index.css`.
+- Todos os componentes usam `SuperAdminLayout` e são renderizados apenas para `super_admin` (rota já protegida).
+- Leitura direta via `supabase-js` — o super_admin já tem policies de SELECT em `profiles`, `products`, `product_reviews`, `product_search_history`, `chat_messages`. Não são necessárias novas policies nem migrations.
+- Reaproveita as RPCs existentes `get_top_searched_products`, `get_top_rated_products`, `get_top_community_users` para os rankings; para o filtro "Todos" passamos um `_since` bem antigo (ex.: `1970-01-01`).
+- Parsing das respostas do questionário: `questionnaire_answers` é JSONB — extraímos campos como `skin_type`, `sensitivity`, `goals[]`, `age_range`, `budget`, `pregnant`, etc.; contagens feitas no cliente (volume esperado é pequeno; se crescer, migramos para RPC agregada).
+- Gráficos com `recharts` + `ChartContainer` já usados em `AdminReports`, mantendo a paleta `--primary/--accent/--secondary` (Mauve & Wine).
+- Novo componente `src/components/super-admin/PlatformAnalytics.tsx` centraliza a lógica; `SuperAdminDashboard.tsx` mostra KPIs + Analytics resumido, e `SuperAdminStats.tsx` mostra a versão completa com todos os gráficos e rankings.
+- Sem mudanças de schema, sem novas edge functions.
 
 ## Fora do escopo
 
-- Editor de foto de perfil no onboarding.
-- Envio real de SMS/verificação de telefone.
-- Persistência das preferências de investimento/frequência em coluna dedicada — por enquanto ficam dentro de `questionnaire_answers`.
-- Redesign do `Questionnaire.tsx` de edição posterior (fica para próxima iteração se o usuário quiser).
+- Exportação CSV/PDF dos relatórios (posso adicionar depois se quiser).
+- Segmentar analytics por tenant/clínica (foco agora é plataforma inteira).
