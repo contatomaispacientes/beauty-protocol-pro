@@ -366,7 +366,7 @@ const Products = () => {
                   <Star className="w-4 h-4 mr-2" />
                   Abrir página do produto
                 </Button>
-                <ProductReviews productId={productId} />
+                <ProductReviews productId={productId} productName={result.product_name} />
               </>
             )}
           </div>
