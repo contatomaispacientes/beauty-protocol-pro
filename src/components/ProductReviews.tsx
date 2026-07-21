@@ -29,6 +29,19 @@ const reviewSchema = z.object({
 
 const MAX_COMMENT = 500;
 
+const relativeTime = (iso: string) => {
+  const diff = Date.now() - new Date(iso).getTime();
+  const d = Math.floor(diff / 86400000);
+  if (d < 1) return "hoje";
+  if (d < 7) return `há ${d} ${d === 1 ? "dia" : "dias"}`;
+  const w = Math.floor(d / 7);
+  if (w < 5) return `há ${w} ${w === 1 ? "semana" : "semanas"}`;
+  const m = Math.floor(d / 30);
+  if (m < 12) return `há ${m} ${m === 1 ? "mês" : "meses"}`;
+  const y = Math.floor(d / 365);
+  return `há ${y} ${y === 1 ? "ano" : "anos"}`;
+};
+
 const StarRow = ({
   value,
   onChange,
@@ -93,7 +106,6 @@ const ProductReviews = ({ productId, productName }: Props) => {
 
     const rows = (reviewsData || []) as ReviewRow[];
 
-    // fetch author names
     const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
     let profileMap: Record<string, string> = {};
     if (userIds.length) {
@@ -124,7 +136,6 @@ const ProductReviews = ({ productId, productName }: Props) => {
     load();
   }, [load]);
 
-  // prefill form when own review loads / product changes
   useEffect(() => {
     if (myReview) {
       setRating(myReview.rating);
@@ -183,25 +194,51 @@ const ProductReviews = ({ productId, productName }: Props) => {
     load();
   };
 
+  // Distribution 5→1
+  const distribution = [5, 4, 3, 2, 1].map((n) => ({
+    star: n,
+    count: reviews.filter((r) => r.rating === n).length,
+  }));
+  const maxCount = Math.max(1, ...distribution.map((d) => d.count));
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="font-serif text-lg">Avaliações da comunidade</CardTitle>
-        <div className="flex items-center gap-3 pt-1">
-          <StarRow value={avg} readOnly />
-          <div className="text-sm">
-            <span className="font-semibold text-foreground">{avg.toFixed(1)}</span>
-            <span className="text-muted-foreground"> · {count} {count === 1 ? "avaliação" : "avaliações"}</span>
+        <div className="flex items-start gap-6 pt-3">
+          <div className="flex flex-col items-start">
+            <span className="text-4xl font-bold text-foreground leading-none">
+              {avg > 0 ? avg.toFixed(1).replace(".", ",") : "—"}
+            </span>
+            <div className="mt-1.5">
+              <StarRow value={avg} readOnly size={16} />
+            </div>
+            <span className="text-xs text-muted-foreground mt-1">
+              {count} {count === 1 ? "avaliação" : "avaliações"}
+            </span>
+          </div>
+          <div className="flex-1 space-y-1 pt-1">
+            {distribution.map((d) => (
+              <div key={d.star} className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-3">{d.star}</span>
+                <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-primary/80 rounded-full transition-all"
+                    style={{ width: `${(d.count / maxCount) * 100}%` }}
+                  />
+                </div>
+                <span className="text-[10px] text-muted-foreground w-6 text-right">{d.count}</span>
+              </div>
+            ))}
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
-        {/* Own review form */}
         <div className="p-4 rounded-xl border border-border bg-muted/30 space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {myReview ? "Sua avaliação" : "Deixe sua avaliação"}
           </p>
-          <StarRow value={rating} onChange={setRating} size={26} />
+          <StarRow value={rating} onChange={setRating} size={30} />
           <div>
             <Textarea
               placeholder={`Conte sua experiência com ${productName}...`}
@@ -217,12 +254,7 @@ const ProductReviews = ({ productId, productName }: Props) => {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button
-              onClick={submit}
-              disabled={saving || rating < 1}
-              size="sm"
-              className="flex-1"
-            >
+            <Button onClick={submit} disabled={saving || rating < 1} size="sm" className="flex-1">
               {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
@@ -240,7 +272,6 @@ const ProductReviews = ({ productId, productName }: Props) => {
           </div>
         </div>
 
-        {/* Reviews list */}
         {loading ? (
           <div className="text-center py-6">
             <Loader2 className="w-5 h-5 animate-spin mx-auto text-muted-foreground" />
@@ -265,9 +296,7 @@ const ProductReviews = ({ productId, productName }: Props) => {
                           <span className="text-[10px] text-muted-foreground ml-1">(você)</span>
                         )}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {new Date(r.created_at).toLocaleDateString("pt-BR")}
-                      </p>
+                      <p className="text-[10px] text-muted-foreground">{relativeTime(r.created_at)}</p>
                     </div>
                   </div>
                   <StarRow value={r.rating} readOnly size={14} />
