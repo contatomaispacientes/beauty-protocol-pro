@@ -8,6 +8,7 @@ import { Search, Loader2, FlaskConical, Baby, ShieldCheck, AlertTriangle, Drople
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import ProductReviews from "@/components/ProductReviews";
 
 interface ProductSafety {
   safe_for_pregnant: string;
@@ -61,6 +62,7 @@ const Products = () => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ProductResult | null>(null);
+  const [productId, setProductId] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -101,11 +103,34 @@ const Products = () => {
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
+  const upsertProduct = async (r: ProductResult): Promise<string | null> => {
+    if (r.product_not_found || !r.product_name) return null;
+    const key = `${(r.brand || "").trim().toLowerCase()}|${r.product_name.trim().toLowerCase()}`;
+    if (!key || key === "|") return null;
+    const { data, error } = await supabase
+      .from("products")
+      .upsert(
+        {
+          normalized_key: key,
+          name: r.product_name,
+          brand: r.brand || null,
+          category: r.category || null,
+          image_url: r.image_url || null,
+        },
+        { onConflict: "normalized_key" },
+      )
+      .select("id")
+      .single();
+    if (error) return null;
+    return data?.id ?? null;
+  };
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim() && !imageBase64) return;
     setLoading(true);
     setResult(null);
+    setProductId(null);
     setAddedToCabinet(false);
 
     try {
@@ -133,6 +158,8 @@ const Products = () => {
       }
 
       setResult(resultData);
+      const pid = await upsertProduct(resultData);
+      setProductId(pid);
 
       // Save to history
       if (user) {
@@ -172,10 +199,14 @@ const Products = () => {
     toast({ title: "Adicionado ao armário ✨" });
   };
 
-  const openFromHistory = (h: HistoryItem) => {
-    setResult({ ...h.analysis, image_url: h.image_url || h.analysis.image_url });
+  const openFromHistory = async (h: HistoryItem) => {
+    const merged = { ...h.analysis, image_url: h.image_url || h.analysis.image_url };
+    setResult(merged);
     setQuery(h.product_name);
     setAddedToCabinet(false);
+    setProductId(null);
+    const pid = await upsertProduct(merged);
+    setProductId(pid);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -322,6 +353,8 @@ const Products = () => {
                 <p className="text-sm text-muted-foreground mt-1">{result.verdict}</p>
               </CardContent>
             </Card>
+
+            {productId && <ProductReviews productId={productId} productName={result.product_name} />}
           </div>
         )}
 
