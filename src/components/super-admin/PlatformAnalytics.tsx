@@ -208,7 +208,7 @@ export default function PlatformAnalytics({ compact = false }: Props) {
   const [topRated, setTopRated] = useState<ProductAgg[]>([]);
   const [topUsers, setTopUsers] = useState<UserAgg[]>([]);
 
-  const since = sinceOf(period);
+  const since = useMemo(() => sinceOf(period), [period]);
 
   useEffect(() => {
     let cancel = false;
