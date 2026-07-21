@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,11 +17,12 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Loader2, Camera, Upload, Sparkles, Package, Archive, Trash2, Pencil, Sun, Moon, Wand2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Plus, Loader2, Camera, Upload, Sparkles, Package, Archive, Trash2, Pencil, Sun, Moon, Wand2, AlertTriangle, CheckCircle2, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import CameraCapture from "@/components/CameraCapture";
+import { getOrCreateProductId } from "@/lib/product-catalog";
 
 const CATEGORIES: { value: string; label: string }[] = [
   { value: "cleanser", label: "Limpeza" },
@@ -46,6 +48,7 @@ interface UserProduct {
   notes: string | null;
   image_url: string | null;
   is_archived: boolean;
+  product_id: string | null;
 }
 
 const emptyForm = {
@@ -61,9 +64,11 @@ const emptyForm = {
 const Cabinet = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [products, setProducts] = useState<UserProduct[]>([]);
+  const [ratings, setRatings] = useState<Record<string, { avg: number; count: number }>>({});
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -85,8 +90,39 @@ const Cabinet = () => {
       .select("*")
       .eq("patient_id", user!.id)
       .order("created_at", { ascending: false });
-    setProducts((data as UserProduct[]) || []);
+    const list = (data as UserProduct[]) || [];
+    setProducts(list);
     setLoading(false);
+
+    const ids = list.map((p) => p.product_id).filter(Boolean) as string[];
+    if (ids.length) {
+      const { data: rows } = await supabase
+        .from("products")
+        .select("id,avg_rating,reviews_count")
+        .in("id", ids);
+      const map: Record<string, { avg: number; count: number }> = {};
+      (rows || []).forEach((r: any) => {
+        map[r.id] = { avg: Number(r.avg_rating) || 0, count: r.reviews_count || 0 };
+      });
+      setRatings(map);
+    }
+  };
+
+  const openDetail = async (p: UserProduct) => {
+    let pid = p.product_id;
+    if (!pid) {
+      pid = await getOrCreateProductId({
+        name: p.name,
+        brand: p.brand,
+        category: p.category,
+        image_url: p.image_url,
+      });
+      if (pid) {
+        await supabase.from("user_products").update({ product_id: pid }).eq("id", p.id);
+      }
+    }
+    if (pid) navigate(`/produtos/${pid}`);
+    else toast({ title: "Não foi possível abrir avaliações", variant: "destructive" });
   };
 
   const openNew = () => {
@@ -476,6 +512,13 @@ const Cabinet = () => {
                         "AM + PM"
                       )}
                     </Badge>
+                    {p.product_id && ratings[p.product_id]?.count > 0 && (
+                      <Badge variant="outline" className="text-[10px] gap-1">
+                        <Star className="w-3 h-3 fill-primary text-primary" strokeWidth={1.5} />
+                        {ratings[p.product_id].avg.toFixed(1).replace(".", ",")}
+                        <span className="text-muted-foreground">({ratings[p.product_id].count})</span>
+                      </Badge>
+                    )}
                   </div>
                   {p.key_ingredients && (
                     <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
@@ -487,6 +530,9 @@ const Cabinet = () => {
                   )}
                 </div>
                 <div className="flex flex-col gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => openDetail(p)} title="Ver avaliações">
+                    <Star className="w-4 h-4 text-primary" />
+                  </Button>
                   <Button size="icon" variant="ghost" onClick={() => openEdit(p)}>
                     <Pencil className="w-4 h-4" />
                   </Button>

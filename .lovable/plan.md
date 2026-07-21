@@ -1,61 +1,59 @@
-Add a shared, per-product rating and reviews system so any user analyzing the same product sees the community's stars and comments.
 
-## Data model (migration)
+Criar uma página de detalhes do produto no estilo Vivino, acessível tanto pela Análise de Produto quanto pelo Armário, com resumo do produto + área rica de avaliações da comunidade (estrelas, distribuição, comentários) e formulário próprio.
 
-New table `public.products` (canonical catalog, auto-populated when someone analyzes a product):
-- `name`, `brand`, `category`, `image_url`
-- `normalized_key` (unique, lowercase `brand|name`) — used to dedupe entries
-- `avg_rating` numeric(3,2) default 0, `reviews_count` int default 0
+## Roteamento
 
-New table `public.product_reviews`:
-- `product_id` → products.id (on delete cascade)
-- `user_id` → auth.users.id
-- `rating` smallint 1–5 (CHECK constraint)
-- `comment` text, max 1000 chars (CHECK)
-- `UNIQUE(product_id, user_id)` — one review per user, editable
-- `created_at`, `updated_at` (+ trigger)
+- Nova rota `/produtos/:productId` → `src/pages/ProductDetail.tsx`.
+- A partir de `Products.tsx`: após analisar, botão "Ver avaliações" leva à página. Itens do histórico também abrem por lá.
+- A partir de `Cabinet.tsx`: cada card do armário fica clicável (ou botão "Avaliar") e leva à página. Se o item do armário ainda não tem `product_id` na tabela pública `products`, fazemos um upsert por `normalized_key` (mesmo padrão de `Products.tsx`) na hora de abrir.
 
-Aggregation:
-- Trigger `refresh_product_rating()` on insert/update/delete of `product_reviews` recomputes `avg_rating` and `reviews_count` on `products`.
+## Modelo de dados
 
-RLS + GRANTs:
-- `products`: SELECT to `authenticated`; INSERT/UPDATE to `authenticated` (upsert on analyze; only safe fields).
-- `product_reviews`: SELECT to `authenticated` (public feed); INSERT/UPDATE/DELETE only where `auth.uid() = user_id`.
-- No `anon` grants.
-- Reviewer display name comes from existing `profiles.display_name` (already readable per current policy) — no schema change there.
+Migration leve para conectar o armário ao catálogo:
 
-## Backend flow
+- `ALTER TABLE public.user_products ADD COLUMN product_id uuid REFERENCES public.products(id) ON DELETE SET NULL;`
+- Índice em `user_products.product_id`.
+- Sem novos GRANTs (a tabela já tem RLS/GRANT). Nenhuma outra alteração de schema — `products` e `product_reviews` já existem com trigger de agregação.
 
-In `Products.tsx`, after a successful analysis:
-1. Upsert into `products` by `normalized_key` (name/brand/category/image_url). Store returned `product_id` alongside the result.
-2. Load reviews for that `product_id` joined with `profiles.display_name`, ordered by newest.
-3. Show aggregate: big star + `avg_rating` (1 decimal) + `(reviews_count) avaliações`.
+## UI da página (inspirada nas telas Vivino enviadas)
 
-When user opens a past search from history, resolve `product_id` the same way (upsert-by-key) so reviews still show.
+Header do produto (card cheio):
+- Imagem do produto grande à esquerda; à direita, bloco branco com nota média grande (ex.: `4,3`), fileira de estrelas, "133 avaliações".
+- Abaixo: marca, nome do produto, categoria (badge).
+- Se o usuário tem perfil preenchido: badge de "Compatível com seu perfil" (reaproveita `compatibility_with_user` quando disponível na análise; para itens vindos só do armário, mostramos apenas se o dado existir).
 
-## UI (Products.tsx)
+Ações rápidas (linha de botões redondos, como no Vivino):
+- Avaliar (rola até o form)
+- Adicionar ao armário / Remover do armário (toggle conforme estado)
+- Compartilhar (Web Share API, fallback: copiar link)
 
-Below the "Veredicto" card, add a "Avaliações da comunidade" card:
-- Header: 5-star row (filled by `avg_rating`), numeric average, review count.
-- User's own review block (top): star picker (1–5) + textarea (max 500 chars, live counter) + Salvar/Atualizar/Excluir. If the user already reviewed, prefill.
-- Reviews list: each row shows author display name (or "Usuário"), date, filled stars, comment. Empty state: "Seja a primeira pessoa a avaliar".
+Bloco "Sobre o produto":
+- Lista de ativos principais + tags de segurança (gestantes, parabenos, pele sensível, etc.) — reutiliza os dados salvos em `product_search_history.analysis` quando existirem para o `product_id`, senão mostra apenas o que temos.
 
-Validation with `zod`:
-```ts
-const reviewSchema = z.object({
-  rating: z.number().int().min(1).max(5),
-  comment: z.string().trim().max(500).optional(),
-});
-```
+Bloco "Avaliações da comunidade" (evolução do componente atual):
+- Nota média grande + estrelas + total.
+- Barra de distribuição por nota (5→1) com contagens, calculada no cliente a partir das reviews.
+- Formulário "Sua avaliação" (seletor de estrelas grande + textarea 500 chars + Publicar/Atualizar/Excluir).
+- Lista de reviews com avatar/inicial, nome, data relativa ("Há 2 meses"), estrelas e comentário.
+- Estado vazio: "Seja a primeira pessoa a avaliar".
 
-Toast on save/delete errors. No console logging of form values.
+## Componentização
 
-## Files touched
+- `src/pages/ProductDetail.tsx` — nova página, usa `DashboardLayout`.
+- `src/components/ProductReviews.tsx` — extender para expor a distribuição de notas (barras 5→1) e datas relativas em pt-BR (util já em uso). O card mantém o formulário e a lista.
+- Novo utilitário `src/lib/product-catalog.ts` com `getOrCreateProductId({ name, brand, category, image_url })` para reusar em Products, Cabinet e ProductDetail.
 
-- New migration `supabase/migrations/<ts>_product_reviews.sql` (tables, trigger, RLS, grants).
-- `src/pages/Products.tsx`: upsert product after analysis, new Reviews section + form.
-- No changes to edge functions or types file (types regenerate post-migration).
+## Integrações
 
-## Out of scope
+- `Products.tsx`: substituir a renderização inline de `<ProductReviews />` por um botão "Ver avaliações da comunidade" que navega para `/produtos/:productId` (mantém o resumo da análise na página atual).
+- `Cabinet.tsx`: card do produto vira link; ao clicar, garante `product_id` (upsert) e navega. Adicionar ícone/estrela discreto no card mostrando `avg_rating` quando `product_id` já estiver preenchido (busca em lote via `in('id', ids)`).
 
-- Moderation, reporting, upvotes, replies, avatars, image uploads in reviews — can be added later if you want the "social" surface to grow.
+## Validação e segurança
+
+- Mantém `zod` para review (1–5 estrelas, comentário até 500 chars).
+- Todas as leituras/gravações passam por RLS já existente (`auth.uid() = user_id` em `product_reviews`).
+- Sem uso de `dangerouslySetInnerHTML`. Sanitização por limite de caracteres.
+
+## Fora do escopo
+
+- Curtidas/respostas em reviews, denúncias, upload de foto na review, filtros por nota, paginação infinita. Podem entrar em uma próxima iteração.

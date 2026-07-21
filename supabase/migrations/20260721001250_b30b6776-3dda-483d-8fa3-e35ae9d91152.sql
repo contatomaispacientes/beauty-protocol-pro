@@ -1,0 +1,2 @@
+ALTER TABLE public.user_products ADD COLUMN IF NOT EXISTS product_id uuid REFERENCES public.products(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_user_products_product_id ON public.user_products(product_id);

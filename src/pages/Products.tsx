@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Loader2, FlaskConical, Baby, ShieldCheck, AlertTriangle, Droplets, Leaf, Camera, Upload, X, History, Plus, Check, Trash2 } from "lucide-react";
+import { Search, Loader2, FlaskConical, Baby, ShieldCheck, AlertTriangle, Droplets, Leaf, Camera, Upload, X, History, Plus, Check, Trash2, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import ProductReviews from "@/components/ProductReviews";
 
 interface ProductSafety {
   safe_for_pregnant: string;
@@ -58,6 +58,7 @@ const compatVariant = (level?: string) =>
 
 const Products = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -354,7 +355,16 @@ const Products = () => {
               </CardContent>
             </Card>
 
-            {productId && <ProductReviews productId={productId} productName={result.product_name} />}
+            {productId && (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate(`/produtos/${productId}`)}
+              >
+                <Star className="w-4 h-4 mr-2" />
+                Ver avaliações da comunidade
+              </Button>
+            )}
           </div>
         )}
 
