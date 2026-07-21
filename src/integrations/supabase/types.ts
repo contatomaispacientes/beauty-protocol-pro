@@ -919,6 +919,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_top_community_users: {
+        Args: { _lim?: number; _since: string }
+        Returns: {
+          display_name: string
+          reviews: number
+          score: number
+          searches: number
+          user_id: string
+        }[]
+      }
+      get_top_rated_products: {
+        Args: { _lim?: number; _min_reviews?: number; _since: string }
+        Returns: {
+          avg_rating: number
+          brand: string
+          image_url: string
+          name: string
+          product_id: string
+          reviews_count: number
+        }[]
+      }
+      get_top_searched_products: {
+        Args: { _lim?: number; _since: string }
+        Returns: {
+          avg_rating: number
+          brand: string
+          image_url: string
+          name: string
+          product_id: string
+          reviews_count: number
+          searches: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
