@@ -537,11 +537,9 @@ export default function OnboardingFlow() {
               <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
                 <Calendar
                   mode="single"
-                  captionLayout="dropdown-buttons"
-                  fromYear={1930}
-                  toYear={new Date().getFullYear()}
                   selected={data.birthDate ? new Date(data.birthDate) : undefined}
                   onSelect={(d) => update({ birthDate: d?.toISOString() })}
+                  defaultMonth={data.birthDate ? new Date(data.birthDate) : new Date(1995, 0)}
                   initialFocus
                   className="p-3 pointer-events-auto"
                 />
